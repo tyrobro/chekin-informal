@@ -1,0 +1,86 @@
+# ==========================================
+# 1. Steering Files & Personal Overrides
+# ==========================================
+# Use these patterns to keep your local setups independent.
+# Any file ending in .local or placed in the /scratch/ folder will be ignored.
+*.local
+*.local.*
+*.override.*
+/scratch/
+/personal/
+.env
+.env.*.local
+
+# ==========================================
+# 2. Frontend (React / Vite / Node.js)
+# ==========================================
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+dist-ssr/
+build/
+
+# Logs & Caches
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+.vite/
+
+# Testing
+coverage/
+
+# ==========================================
+# 3. Backend (Laravel / PHP)
+# ==========================================
+# Dependencies
+/vendor/
+
+# Storage & Logs
+/storage/*.key
+/storage/logs/
+/storage/framework/cache/data/
+/storage/framework/sessions/
+/storage/framework/testing/
+/storage/framework/views/
+/bootstrap/cache/
+
+# Laravel Environment
+/.env.backup
+/.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+
+# Build & Public
+/public/build
+/public/hot
+/public/storage
+
+# ==========================================
+# 4. OS & Editor Configs
+# ==========================================
+# macOS / Windows
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+$RECYCLE.BIN/
+
+# IDEs (VS Code, IntelliJ, etc.)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

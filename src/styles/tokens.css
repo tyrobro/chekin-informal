@@ -1,0 +1,35 @@
+/* ExplaraX design tokens — imported once in main.jsx */
+:root {
+  /* Brand colours */
+  --color-primary:        #7E57C2;
+  --color-primary-dark:   #6A3FB5;  /* hover: ~10% darker */
+  --color-primary-light:  #9575CD;  /* focus ring */
+  --color-success:        #5BC97C;
+  --color-error:          #D64545;
+  --color-white:          #FFFFFF;
+  --color-warning:        #FFFFCC;
+  --color-body-text:      #3B3535;
+  --color-border:         #F0F0F0;
+
+  /* Typography */
+  --font-family:          'Inter', 'Segoe UI', sans-serif;
+  --font-size-base:       1rem;
+  --font-size-sm:         0.875rem;
+  --font-size-lg:         1.125rem;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Transitions */
+  --transition-fast: 80ms ease;
+  --transition-base: 150ms ease;
+}

@@ -1,0 +1,18 @@
+.track {
+  width: 100%;
+  height: 8px;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width var(--transition-base);
+}
+
+/* Frozen state (error) — disable the transition so the bar stops mid-way */
+.fill.frozen {
+  transition: none;
+}

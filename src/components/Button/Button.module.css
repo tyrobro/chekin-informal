@@ -1,0 +1,98 @@
+/* ── Base button reset + shared styles ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs, 4px);
+
+  padding: var(--space-sm, 8px) var(--space-md, 16px);
+  border: none;
+  border-radius: var(--radius-md, 8px);
+
+  font-family: var(--font-family, 'Inter', 'Segoe UI', sans-serif);
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+
+  transition:
+    background var(--transition-fast, 80ms ease),
+    color var(--transition-fast, 80ms ease),
+    transform var(--transition-fast, 80ms ease),
+    outline-color var(--transition-fast, 80ms ease);
+
+  /* Prevent text selection on rapid clicks */
+  user-select: none;
+}
+
+/* ── Focus (shared across all variants) ── */
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary-light, #9575CD);
+  outline-offset: 2px;
+}
+
+/* ── Active (shared) ── */
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* ── Disabled (shared) ── */
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ──────────────────────────────────────
+   PRIMARY variant
+─────────────────────────────────────── */
+.primary {
+  background: var(--color-primary, #7E57C2);
+  color: var(--color-bg, #ffffff);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-primary-dark, #6A3FB5);
+}
+
+.primary:active:not(:disabled) {
+  background: var(--color-primary-dark, #6A3FB5);
+}
+
+/* ──────────────────────────────────────
+   SECONDARY variant
+─────────────────────────────────────── */
+.secondary {
+  background: transparent;
+  color: var(--color-primary, #7E57C2);
+  border: 1px solid var(--color-primary, #7E57C2);
+}
+
+.secondary:hover:not(:disabled) {
+  background: rgba(126, 87, 194, 0.08); /* subtle tint of --color-primary */
+}
+
+.secondary:active:not(:disabled) {
+  background: rgba(126, 87, 194, 0.15);
+}
+
+/* ──────────────────────────────────────
+   DANGER variant
+─────────────────────────────────────── */
+.danger {
+  background: var(--color-error, #D64545);
+  color: var(--color-bg, #ffffff);
+}
+
+.danger:hover:not(:disabled) {
+  background: #b83737; /* ~10% darker than --color-error */
+}
+
+.danger:active:not(:disabled) {
+  background: #b83737;
+}
+
+.danger:focus-visible {
+  outline-color: var(--color-error, #D64545);
+}

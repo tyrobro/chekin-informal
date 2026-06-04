@@ -10,16 +10,17 @@ import styles from './PrepareSyncModal.module.css';
  * PrepareSyncModal — unified modal for Prepare and Re-sync flows.
  *
  * Props:
- *   event          — Event object { id, name, totalAttendees, status }
+ *   event          — Event object { id, name, status }
+ *   totalAttendees — number — pre-fetched attendee count (passed from EventDashboard)
  *   modalType      — 'prepare' | 'resync'
  *   onClose        — () => void — called after cancel or successful sync close
  *   onSyncSuccess  — (eventId: string) => void — called when sync completes
  */
-function PrepareSyncModal({ event, modalType, onClose, onSyncSuccess }) {
+function PrepareSyncModal({ event, totalAttendees = 0, modalType, onClose, onSyncSuccess }) {
   const [selectedPolicy, setSelectedPolicy] = useState('both');
   const [syncPhase, setSyncPhase] = useState('idle'); // 'idle' | 'syncing' | 'success' | 'error'
   const [synced, setSynced] = useState(0);
-  const [total, setTotal] = useState(event?.totalAttendees ?? 0);
+  const [total, setTotal] = useState(totalAttendees);
   const [errorSynced, setErrorSynced] = useState(0);
 
   const cancelRef = useRef(null);
@@ -44,7 +45,7 @@ function PrepareSyncModal({ event, modalType, onClose, onSyncSuccess }) {
   const runSync = useCallback((policy, alreadySynced = 0) => {
     setSyncPhase('syncing');
     setSynced(alreadySynced);
-    setTotal(event.totalAttendees);
+    setTotal(totalAttendees);
 
     if (cancelRef.current) {
       cancelRef.current();
@@ -53,7 +54,7 @@ function PrepareSyncModal({ event, modalType, onClose, onSyncSuccess }) {
     cancelRef.current = mockPrepareCheckin(
       event.id,
       policy,
-      event.totalAttendees,
+      totalAttendees,
       (payload) => {
         if (payload.status === 'progress') {
           setSynced(payload.synced);
@@ -69,7 +70,7 @@ function PrepareSyncModal({ event, modalType, onClose, onSyncSuccess }) {
       },
       {alreadySynced}
     );
-  }, [event, onSyncSuccess]);
+  }, [event, totalAttendees, onSyncSuccess]);
 
   const handlePrepareConfirm = () => {
     runSync(selectedPolicy, 0);
@@ -92,7 +93,7 @@ function PrepareSyncModal({ event, modalType, onClose, onSyncSuccess }) {
   };
 
   const isPrepare = modalType === 'prepare';
-  const isZeroAttendees = event?.totalAttendees === 0;
+  const isZeroAttendees = totalAttendees === 0;
   const isSyncing = syncPhase === 'syncing';
   const isError = syncPhase === 'error';
   const isSuccess = syncPhase === 'success';
@@ -151,7 +152,7 @@ function PrepareSyncModal({ event, modalType, onClose, onSyncSuccess }) {
           <div className={styles.prepareContent}>
             <p className={styles.attendeeMessage}>
               This will sync{' '}
-              <strong>{event?.totalAttendees ?? 0}</strong> attendees to the check-in system.
+              <strong>{totalAttendees}</strong> attendees to the check-in system.
             </p>
             {isZeroAttendees && (
               <p className={styles.warningText}>

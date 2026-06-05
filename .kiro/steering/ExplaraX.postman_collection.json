@@ -1,0 +1,195 @@
+{
+  "info": {
+    "_postman_id": "e657e409-5098-47cc-9c72-309b568f26f3",
+    "name": "ExplaraX",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "2901376"
+  },
+  "item": [
+    {
+      "name": "Account",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://account.explarax.com/api/login?email=pkjnec@gmail.com&password=logical",
+              "protocol": "https",
+              "host": [
+                "account",
+                "explarax",
+                "com"
+              ],
+              "path": [
+                "api",
+                "login"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "pkjnec@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "logical",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://account.explarax.com/api/verify?token=f9fe86443d0d917a6e8f1aef317a7dd988652909766d67f76a72368df0a5a26e\n&code=14544745",
+              "protocol": "https",
+              "host": [
+                "account",
+                "explarax",
+                "com"
+              ],
+              "path": [
+                "api",
+                "verify"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "f9fe86443d0d917a6e8f1aef317a7dd988652909766d67f76a72368df0a5a26e\n"
+                },
+                {
+                  "key": "code",
+                  "value": "14544745"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Event",
+      "item": [
+        {
+          "name": "Event List",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "ea3911aef8b83ce62a3cf7e7725d384576c1319b725b923fa59c59f2ff047472",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://event.explarax.com/api/event",
+              "protocol": "https",
+              "host": [
+                "event",
+                "explarax",
+                "com"
+              ],
+              "path": [
+                "api",
+                "event"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Attendee List",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "ea3911aef8b83ce62a3cf7e7725d384576c1319b725b923fa59c59f2ff047472",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://payments.explarax.com/api/event/204/attendees",
+              "protocol": "https",
+              "host": [
+                "payments",
+                "explarax",
+                "com"
+              ],
+              "path": [
+                "api",
+                "event",
+                "204",
+                "attendees"
+              ],
+              "query": [
+                {
+                  "key": "",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check-In",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "ea3911aef8b83ce62a3cf7e7725d384576c1319b725b923fa59c59f2ff047472",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "https://payments.explarax.com/api/event/204/attendees/2010/check-in",
+              "protocol": "https",
+              "host": [
+                "payments",
+                "explarax",
+                "com"
+              ],
+              "path": [
+                "api",
+                "event",
+                "204",
+                "attendees",
+                "2010",
+                "check-in"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

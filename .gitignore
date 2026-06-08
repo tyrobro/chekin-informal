@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ==========================================
 # 1. Steering Files & Personal Overrides
 # ==========================================
@@ -87,6 +88,8 @@ $RECYCLE.BIN/
 *.\ExplaraX.postman_collection.json
 .vscode
 
+=======
+>>>>>>> d22b731bea2d0d90a1525572ed034e415133d2e6
 *.log
 .DS_Store
 .env
@@ -110,4 +113,8 @@ $RECYCLE.BIN/
 /vendor
 Homestead.json
 Homestead.yaml
+<<<<<<< HEAD
 Thumbs.db
+=======
+Thumbs.db
+>>>>>>> d22b731bea2d0d90a1525572ed034e415133d2e6

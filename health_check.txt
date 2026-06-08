@@ -1,0 +1,36 @@
+
+   INFO  Configuration cache cleared successfully.  
+
+
+  POST       api/internal/checkin/prepare/{event_id} ................... App\Features\AttendeeSync\Http\Controllers\PrepareController
+  POST       internal/checkin/prepare/{event_id} ....................... App\Features\AttendeeSync\Http\Controllers\PrepareController
+
+                                                                                                                   Showing [2] routes
+
+---MIGRATE-STATUS---
+
+  Migration name ..................................................................................................... Batch / Status  
+  0001_01_01_000000_create_users_table ...................................................................................... [1] Ran  
+  0001_01_01_000001_create_cache_table ...................................................................................... [1] Ran  
+  0001_01_01_000002_create_jobs_table ....................................................................................... [1] Ran  
+  2026_06_04_094942_create_event_hmac_keys_table ............................................................................ [1] Ran  
+  2026_06_04_094943_create_event_preparations_table ......................................................................... [1] Ran  
+
+---QUEUE-TABLES---
+                 List of tables
+ Schema |         Name          | Type  | Owner 
+--------+-----------------------+-------+-------
+ public | cache                 | table | ayush
+ public | cache_locks           | table | ayush
+ public | event_hmac_keys       | table | ayush
+ public | event_preparations    | table | ayush
+ public | failed_jobs           | table | ayush
+ public | job_batches           | table | ayush
+ public | jobs                  | table | ayush
+ public | migrations            | table | ayush
+ public | password_reset_tokens | table | ayush
+ public | sessions              | table | ayush
+ public | users                 | table | ayush
+(11 rows)
+
+EXIT: 0

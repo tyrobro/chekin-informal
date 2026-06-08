@@ -1,0 +1,18 @@
+
+  “ Act only according to that maxim whereby you can, at the same time, will that it should become a universal law. ”
+  — Immanuel Kant
+
+---APP-KEY---
+
+   ERROR  Command "key:show" is not defined. Did you mean one of these?  
+
+  ⇂ config:show  
+  ⇂ db:show  
+  ⇂ key:generate  
+  ⇂ model:show  
+
+---QUEUE-DRIVER---
+
+   INFO  Processing jobs from the [attendee-sync] queue.  
+
+EXIT: 0

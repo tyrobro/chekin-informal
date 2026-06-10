@@ -1,0 +1,707 @@
+
+  [30;43;1m WARN [39;49;22m Using comma-separated values with --group is deprecated and will no longer work in PHPUnit 12. You can use --group multiple times instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\HttpExplaraXAttendeeRepositoryTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\QrTokenServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\SupabaseUpsertServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\Features\SyncBack\CheckinRecordDTOTest::test_all_checkin_methods_accepted(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\AttendeeBatchPayloadPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\AttendeeSyncJobIntegrationTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\BatchPartitionPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\C1ScenariosTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\CheckInFieldsPreservationPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\EventPreparationRecordPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\HmacKeyFormatPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\HmacKeyStabilityPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\PrepareEndpointTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\QrTokenDeterminismPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\SyncIdempotencePropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\SyncLogCorrelationPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackEndpointTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackIdempotencyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackInvalidTicketsTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackLargeBatchTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   PASS  Tests\Unit\AttendeeSync\HttpExplaraXAttendeeRepositoryTest
+  ✓ fetches all attendees from single page                               0.17s  
+  ✓ fetches all pages when paginated                                     0.02s  
+  ✓ throws on non 2xx response                                           0.02s  
+  ✓ pii fields are stripped from dtos                                    0.02s  
+
+   PASS  Tests\Unit\AttendeeSync\QrTokenServiceTest
+  ✓ sign returns 64 char lowercase hex                                   0.05s  
+  ✓ sign produces known vector                                           0.01s  
+  ✓ sign is deterministic for same inputs                                0.01s  
+  ✓ different ticket ids produce different tokens                        0.01s  
+  ✓ different keys produce different tokens                              0.01s  
+
+   PASS  Tests\Unit\AttendeeSync\SupabaseUpsertServiceTest
+  ✓ upserts successfully after two failures                              0.03s  
+  ✓ throws exception after exhausting retries                            0.01s  
+  ✓ succeeds on first attempt                                            0.01s  
+  ✓ sends correct headers                                                0.01s  
+
+   PASS  Tests\Feature\AttendeeSync\AttendeeBatchPayloadPropertyTest
+  ✓ upsert array contains only allowed fields and no pii                 0.04s  
+
+   PASS  Tests\Feature\AttendeeSync\AttendeeSyncJobIntegrationTest
+  ✓ job completes and writes preparation record for 100 attendees        0.25s  
+
+   PASS  Tests\Feature\AttendeeSync\BatchPartitionPropertyTest
+  ✓ batch count is ceil of n over batch size                             0.05s  
+
+   PASS  Tests\Feature\AttendeeSync\C1ScenariosTest
+  ✓ sync 10k attendees produces 10 batches and completes                 0.07s  
+  ✓ resync after 50 new tickets adds 50 rows and preserves 9950          0.14s  
+  ✓ network drop on batch 3 retries and completes                        0.03s  
+  ✓ batch failure after exhausted retries marks sync failed              0.03s  
+
+   PASS  Tests\Feature\AttendeeSync\CheckInFieldsPreservationPropertyTest
+  ✓ upsert payload never contains checkin fields                         0.02s  
+
+   PASS  Tests\Feature\AttendeeSync\EventPreparationRecordPropertyTest
+  ✓ completed dto has all required non null fields                       0.02s  
+
+   PASS  Tests\Feature\AttendeeSync\HmacKeyFormatPropertyTest
+  ✓ generated hmac key is always 64 char lowercase hex                   0.01s  
+
+   PASS  Tests\Feature\AttendeeSync\HmacKeyStabilityPropertyTest
+  ✓ get or create returns same key on repeated calls                     0.24s  
+
+   PASS  Tests\Feature\AttendeeSync\PrepareEndpointTest
+  ✓ returns 202 with sync id on success                                  0.06s  
+  ✓ returns 409 when sync already in progress                            0.02s  
+  ✓ returns 422 for zero event id                                        0.02s  
+  ✓ returns 422 for negative event id                                    0.02s  
+  ✓ returns 422 for string event id                                      0.02s  
+  ✓ accepts positive integer event id                                    0.02s  
+  ✓ returns 429 after exceeding rate limit                               0.04s  
+
+   PASS  Tests\Feature\AttendeeSync\QrTokenDeterminismPropertyTest
+  ✓ qr token is deterministic for any ticket id and key                  0.02s  
+
+   PASS  Tests\Feature\AttendeeSync\SyncIdempotencePropertyTest
+  ✓ sync is idempotent running twice produces same state                 0.03s  
+  ✓ resync is additive and preserves existing rows                       0.03s  
+
+   PASS  Tests\Feature\AttendeeSync\SyncLogCorrelationPropertyTest
+  ✓ every log entry always contains sync id and event id                 0.05s  
+
+   PASS  Tests\Feature\SyncBack\SyncBackEndpointTest
+  ✓ missing auth header returns 401                                      0.02s  
+  ✓ wrong secret returns 401                                             0.02s  
+  ✓ empty bearer token returns 401                                       0.02s  
+  ✓ malformed auth header returns 401                                    0.02s  
+  ✓ missing event id returns 422                                         0.02s  
+  ✓ invalid batch id returns 422                                         0.02s  
+  ✓ empty records array returns 422                                      0.02s  
+  ✓ missing records returns 422                                          0.03s  
+  ✓ invalid checkin method returns 422                                   0.02s  
+  ✓ invalid checked in at format returns 422                             0.02s  
+  ✓ valid request returns 200                                            0.04s  
+  ✓ valid request response has correct shape                             0.03s  
+  ✓ batch id is echoed in response                                       0.03s  
+  ✓ total equals records count                                           0.03s  
+  ✓ succeeded plus failed equals total                                   0.03s  
+  ✓ valid request updates ticket checked in at                           0.03s  
+  ✓ valid request updates ticket checked in gate                         0.03s  
+  ✓ valid request updates ticket checkin method                          0.03s  
+  ✓ all three checkin methods accepted by endpoint                       0.04s  
+
+   PASS  Tests\Feature\SyncBack\SyncBackIdempotencyTest
+  ✓ second call with same payload returns 200                            0.05s  
+  ✓ second call succeeded count equals total                             0.03s  
+  ✓ second call does not change ticket checked in at                     0.03s  
+  ✓ second call does not insert into checkin sync errors                 0.03s  
+  ✓ all duplicate batch has zero failed                                  0.04s  
+  ✓ partial duplicate batch skips duplicates updates new                 0.03s  
+
+   PASS  Tests\Feature\SyncBack\SyncBackInvalidTicketsTest
+  ✓ single invalid ticket returns one failed                             0.03s  
+  ✓ invalid ticket creates row in checkin sync errors                    0.03s  
+  ✓ sync errors row has correct fields                                   0.03s  
+  ✓ 50 invalid out of 100 returns 50 failed and 50 succeeded             0.12s  
+  ✓ invalid tickets do not stop valid tickets from processing            0.03s  
+  ✓ all invalid returns zero succeeded and 200 status                    0.03s  
+  ✓ failures array contains entry for each invalid ticket                0.03s  
+  ✓ failures reason is ticket not found                                  0.03s  
+PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440 bytes) in /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/ValidationData.php on line 20
+Stack trace:
+#0 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/ValidationData.php(20): array_merge()
+#1 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/ValidationRuleParser.php(163): Illuminate\Validation\ValidationData::initializeAndGatherData()
+#2 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/ValidationRuleParser.php(73): Illuminate\Validation\ValidationRuleParser->explodeWildcardRules()
+#3 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/ValidationRuleParser.php(55): Illuminate\Validation\ValidationRuleParser->explodeRules()
+#4 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/Validator.php(1308): Illuminate\Validation\ValidationRuleParser->explode()
+#5 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/Validator.php(1272): Illuminate\Validation\Validator->addRules()
+#6 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/Validator.php(357): Illuminate\Validation\Validator->setRules()
+#7 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/Factory.php(159): Illuminate\Validation\Validator->__construct()
+#8 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/Factory.php(106): Illuminate\Validation\Factory->resolve()
+#9 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/FormRequest.php(120): Illuminate\Validation\Factory->make()
+#10 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/FormRequest.php(91): Illuminate\Foundation\Http\FormRequest->createDefaultValidator()
+#11 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Validation/ValidatesWhenResolvedTrait.php(25): Illuminate\Foundation\Http\FormRequest->getValidatorInstance()
+#12 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Providers/FormRequestServiceProvider.php(30): Illuminate\Foundation\Http\FormRequest->validateResolved()
+#13 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Container/Container.php(1618): Illuminate\Foundation\Providers\FormRequestServiceProvider->{closure:Illuminate\Foundation\Providers\FormRequestServiceProvider::boot():29}()
+#14 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Container/Container.php(1556): Illuminate\Container\Container->fireCallbackArray()
+#15 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Container/Container.php(1542): Illuminate\Container\Container->fireAfterResolvingCallbacks()
+#16 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Container/Container.php(951): Illuminate\Container\Container->fireResolvingCallbacks()
+#17 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#18 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#19 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#20 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/ResolvesRouteDependencies.php(92): Illuminate\Foundation\Application->make()
+#21 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/ResolvesRouteDependencies.php(51): Illuminate\Routing\ControllerDispatcher->transformDependency()
+#22 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/ResolvesRouteDependencies.php(30): Illuminate\Routing\ControllerDispatcher->resolveMethodDependencies()
+#23 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(59): Illuminate\Routing\ControllerDispatcher->resolveClassMethodDependencies()
+#24 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(40): Illuminate\Routing\ControllerDispatcher->resolveParameters()
+#25 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/Route.php(265): Illuminate\Routing\ControllerDispatcher->dispatch()
+#26 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/Route.php(211): Illuminate\Routing\Route->runController()
+#27 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/Router.php(822): Illuminate\Routing\Route->run()
+#28 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():821}()
+#29 /home/ayush/Foundership/ChekInExplara/app/Features/SyncBack/Http/Middleware/VerifySharedSecret.php(57): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#30 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Features\SyncBack\Http\Middleware\VerifySharedSecret->handle()
+#31 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#32 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
+#33 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#34 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate\Pipeline\Pipeline->then()
+#35 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/Router.php(800): Illuminate\Routing\Router->runRouteWithinStack()
+#36 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/Router.php(764): Illuminate\Routing\Router->runRoute()
+#37 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Routing/Router.php(753): Illuminate\Routing\Router->dispatchToRoute()
+#38 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
+#39 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
+#40 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#41 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#42 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
+#43 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#44 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#45 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
+#46 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#47 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
+#48 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(109): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#49 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
+#50 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(74): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#51 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
+#52 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#53 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
+#54 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#55 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks->handle()
+#56 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(26): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#57 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePathEncoding->handle()
+#58 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#59 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
+#60 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
+#61 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(607): Illuminate\Foundation\Http\Kernel->handle()
+#62 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(573): Illuminate\Foundation\Testing\TestCase->call()
+#63 /home/ayush/Foundership/ChekInExplara/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(411): Illuminate\Foundation\Testing\TestCase->json()
+#64 /home/ayush/Foundership/ChekInExplara/tests/Feature/SyncBack/SyncBackLargeBatchTest.php(109): Illuminate\Foundation\Testing\TestCase->postJson()
+#65 /home/ayush/Foundership/ChekInExplara/vendor/phpunit/phpunit/src/Framework/TestCase.php(1667): Tests\Feature\SyncBack\SyncBackLargeBatchTest->test_10000_records_completes_within_120_seconds()
+#66 /home/ayush/Foundership/ChekInExplara/vendor/phpunit/phpunit/src/Framework/TestCase.php(519): PHPUnit\Framework\TestCase->runTest()
+#67 /home/ayush/Foundership/ChekInExplara/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(87): PHPUnit\Framework\TestCase->runBare()
+#68 /home/ayush/Foundership/ChekInExplara/vendor/phpunit/phpunit/src/Framework/TestCase.php(365): PHPUnit\Framework\TestRunner->run()
+#69 /home/ayush/Foundership/ChekInExplara/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\Framework\TestCase->run()
+#70 /home/ayush/Foundership/ChekInExplara/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\Framework\TestSuite->run()
+#71 /home/ayush/Foundership/ChekInExplara/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\Framework\TestSuite->run()
+#72 /home/ayush/Foundership/ChekInExplara/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#73 /home/ayush/Foundership/ChekInExplara/vendor/phpunit/phpunit/src/TextUI/Application.php(211): PHPUnit\TextUI\TestRunner->run()
+#74 /home/ayush/Foundership/ChekInExplara/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#75 {main}
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+
+
+In ValidationData.php line 20:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 2621440  
+   bytes)                                                                      
+                                                                               
+

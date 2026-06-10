@@ -21,7 +21,6 @@ use Tests\TestCase;
  * Correctness Property 1: Response Count Invariant
  *
  * @group slow
- * @group c2-sync-back
  */
 class SyncBackLargeBatchTest extends TestCase
 {

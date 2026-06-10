@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="DB_CONNECTION" value="pgsql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="5432"/>
+        <env name="DB_DATABASE" value="explara_core_test"/>
+        <env name="DB_USERNAME" value="ayush"/>
+        <env name="DB_PASSWORD" value=""/>
+        <env name="DB_URL" value=""/>
+        <env name="SUPABASE_URL" value="https://test.supabase.co"/>
+        <env name="SUPABASE_SERVICE_ROLE_KEY" value="test-service-key"/>
+        <env name="SUPABASE_RETRY_DELAY" value="0"/>
+        <env name="EXPLARA_PAYMENTS_URL" value="https://payments.explarax.com"/>
+        <env name="EXPLARA_API_TOKEN" value="test-api-token"/>
+        <env name="EXPLARA_RETRY_DELAY" value="0"/>
+        <env name="SYNC_BATCH_SIZE" value="1000"/>
+        <env name="CHECKIN_SYNC_BACK_SECRET" value="test-shared-secret-for-phpunit"/>
+        <env name="SYNCBACK_CHUNK_SIZE" value="500"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+    </php>
+</phpunit>

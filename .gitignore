@@ -38,7 +38,7 @@ coverage/
 # 3. Backend (Laravel / PHP)
 # ==========================================
 # Dependencies
-/vendor/
+
 
 # Storage & Logs
 /storage/*.key

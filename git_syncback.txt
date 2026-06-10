@@ -1,3 +1,0 @@
-error: pathspec 'app/Features/SyncBack/' did not match any file(s) known to git
-Did you forget to 'git add'?
-exit: 0

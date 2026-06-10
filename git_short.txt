@@ -1,4 +1,0 @@
-?? git_log.txt
-?? git_short.txt
-?? git_status.txt
-exit: 0

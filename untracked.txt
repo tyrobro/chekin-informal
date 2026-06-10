@@ -1,0 +1,9 @@
+git_all.txt
+git_head.txt
+git_log.txt
+git_short.txt
+git_status.txt
+git_syncback.txt
+git_uall.txt
+untracked.txt
+total: 8

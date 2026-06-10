@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Check-In Sync-Back Shared Secret
+    |--------------------------------------------------------------------------
+    |
+    | Shared secret used to authenticate inbound POST /internal/checkin/sync-back
+    | requests from Supabase. Read at runtime via VerifySharedSecret middleware.
+    |
+    | Requirements: 1.1, 1.2, 1.4
+    |
+    */
+    'checkin_sync_back' => [
+        'secret' => env('CHECKIN_SYNC_BACK_SECRET'),
+    ],
+
 ];

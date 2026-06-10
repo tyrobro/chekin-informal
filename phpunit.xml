@@ -37,6 +37,8 @@
         <env name="EXPLARA_API_TOKEN" value="test-api-token"/>
         <env name="EXPLARA_RETRY_DELAY" value="0"/>
         <env name="SYNC_BATCH_SIZE" value="1000"/>
+        <env name="CHECKIN_SYNC_BACK_SECRET" value="test-shared-secret-for-phpunit"/>
+        <env name="SYNCBACK_CHUNK_SIZE" value="500"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

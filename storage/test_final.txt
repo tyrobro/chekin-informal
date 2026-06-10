@@ -1,0 +1,114 @@
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\HttpExplaraXAttendeeRepositoryTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\QrTokenServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\SupabaseUpsertServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\Features\SyncBack\CheckinRecordDTOTest::test_all_checkin_methods_accepted(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\AttendeeBatchPayloadPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\AttendeeSyncJobIntegrationTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\BatchPartitionPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\C1ScenariosTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\CheckInFieldsPreservationPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\EventPreparationRecordPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\HmacKeyFormatPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\HmacKeyStabilityPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\PrepareEndpointTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\QrTokenDeterminismPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\SyncIdempotencePropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\SyncLogCorrelationPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackEndpointTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackIdempotencyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackInvalidTicketsTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackLargeBatchTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   PASS  Tests\Unit\Features\SyncBack\CheckinRecordDTOTest
+  ✓ from array sets all properties correctly
+  ✓ all checkin methods accepted with data set "qr scan"
+  ✓ all checkin methods accepted with data set "manual"
+  ✓ all checkin methods accepted with data set "nfc"
+  ✓ to array returns all fields
+  ✓ from array handles missing keys with empty strings
+
+   PASS  Tests\Unit\Features\SyncBack\SyncBackResponseDTOTest
+  ✓ initial state is zero counts                                         0.02s  
+  ✓ record success increments succeeded
+  ✓ record failure increments failed and appends failure
+  ✓ to array matches contract shape
+  ✓ failures array length equals failed count
+  ✓ succeeded plus failed equals total invariant
+  ✓ failures array is empty when failed is zero
+  ✓ failures are serialised to arrays in to array
+  ✓ batch id is echoed in response
+
+   PASS  Tests\Unit\Features\SyncBack\SyncBackServiceTest
+  ✓ all valid records returns all succeeded                              0.02s  
+  ✓ all invalid records returns all failed                               0.02s  
+  ✓ mixed batch returns correct split
+  ✓ duplicate records counted as succeeded not failed
+  ✓ duplicate records do not trigger bulk update
+  ✓ invalid tickets trigger bulk error insert
+  ✓ valid records trigger bulk update
+  ✓ response invariant succeeded plus failed equals total
+  ✓ failures array length equals failed count
+  ✓ all duplicate batch does not call bulk update or insert
+
+   PASS  Tests\Feature\SyncBack\SyncBackEndpointTest
+  ✓ missing auth header returns 401                                      0.41s  
+  ✓ wrong secret returns 401                                             0.02s  
+  ✓ empty bearer token returns 401                                       0.02s  
+  ✓ malformed auth header returns 401                                    0.02s  
+  ✓ missing event id returns 422                                         0.04s  
+  ✓ invalid batch id returns 422                                         0.02s  
+  ✓ empty records array returns 422                                      0.02s  
+  ✓ missing records returns 422                                          0.02s  
+  ✓ invalid checkin method returns 422                                   0.02s  
+  ✓ invalid checked in at format returns 422                             0.02s  
+  ✓ valid request returns 200                                            0.04s  
+  ✓ valid request response has correct shape                             0.02s  
+  ✓ batch id is echoed in response                                       0.03s  
+  ✓ total equals records count                                           0.03s  
+  ✓ succeeded plus failed equals total                                   0.03s  
+  ✓ valid request updates ticket checked in at                           0.03s  
+  ✓ valid request updates ticket checked in gate                         0.03s  
+  ✓ valid request updates ticket checkin method                          0.03s  
+  ✓ all three checkin methods accepted by endpoint                       0.05s  
+
+   PASS  Tests\Feature\SyncBack\SyncBackIdempotencyTest
+  ✓ second call with same payload returns 200                            0.06s  
+  ✓ second call succeeded count equals total                             0.03s  
+  ✓ second call does not change ticket checked in at                     0.03s  
+  ✓ second call does not insert into checkin sync errors                 0.04s  
+  ✓ all duplicate batch has zero failed                                  0.04s  
+  ✓ partial duplicate batch skips duplicates updates new                 0.03s  
+
+   PASS  Tests\Feature\SyncBack\SyncBackInvalidTicketsTest
+  ✓ single invalid ticket returns one failed                             0.04s  
+  ✓ invalid ticket creates row in checkin sync errors                    0.03s  
+  ✓ sync errors row has correct fields                                   0.03s  
+  ✓ 50 invalid out of 100 returns 50 failed and 50 succeeded             0.12s  
+  ✓ invalid tickets do not stop valid tickets from processing            0.03s  
+  ✓ all invalid returns zero succeeded and 200 status                    0.03s  
+  ✓ failures array contains entry for each invalid ticket                0.03s  
+  ✓ failures reason is ticket not found                                  0.02s  
+
+  Tests:    58 passed (181 assertions)
+  Duration: 1.62s
+

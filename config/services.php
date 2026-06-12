@@ -37,6 +37,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Supabase
+    |--------------------------------------------------------------------------
+    |
+    | Credentials for the Supabase project used as the check-in store.
+    | The service-role key is used by SupabaseUpsertService for admin upserts.
+    | SUPABASE_RETRY_DELAY controls the backoff multiplier (set to 0 in tests).
+    |
+    */
+    'supabase' => [
+        'url'              => env('SUPABASE_URL'),
+        'service_role_key' => env('SUPABASE_SERVICE_ROLE_KEY'),
+        'retry_delay'      => (int) env('SUPABASE_RETRY_DELAY', 1),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Check-In Sync-Back Shared Secret
     |--------------------------------------------------------------------------
     |

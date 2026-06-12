@@ -112,4 +112,122 @@ class HttpExplaraXAttendeeRepositoryTest extends TestCase
         $this->assertObjectNotHasProperty('phone', $dto);
         $this->assertObjectNotHasProperty('payment_id', $dto);
     }
+
+    // -------------------------------------------------------------------------
+    // Regression tests — attendee_name field mapping (bugfix)
+    // Bug:   fromApiResponse() read $data['attendee_name'] (flat key, always null in
+    //        the real ExplaraX API). Real API delivers name as $data['account']['name'].
+    // Fix:   attendee_name resolves $account['name'] ?? $data['attendee_name'] ?? ''.
+    // Scope: Only attendee_name is proven to live under 'account'. The four other
+    //        identity fields (ticket_type, company, designation, seat) remain flat reads
+    //        until API evidence confirms their nested path.
+    // -------------------------------------------------------------------------
+
+    /**
+     * Regression — nested account shape (real ExplaraX API payload).
+     *
+     * Reproduces the confirmed Tinker evidence:
+     *   GET /api/event/204/attendees → { "ticket_id": 86, "account": { "name": "Pankaj Kumar" } }
+     *   Previously produced: AttendeeDTO { attendee_name: "" }
+     *   Now must produce:    AttendeeDTO { attendee_name: "Pankaj Kumar" }
+     */
+    public function test_maps_attendee_name_from_nested_account_shape(): void
+    {
+        // Minimal real-API payload (ticket_id=86, confirmed via Tinker)
+        $dto = AttendeeDTO::fromApiResponse(204, [
+            'ticket_id' => 86,
+            'account'   => ['name' => 'Pankaj Kumar'],
+        ]);
+
+        $this->assertSame('86',           $dto->ticket_id);
+        $this->assertSame(204,            $dto->event_id);
+        $this->assertSame('Pankaj Kumar', $dto->attendee_name);
+
+        // Other identity fields are absent from the payload — they should be null/empty,
+        // not fabricated from the account object.
+        $this->assertNull($dto->ticket_type);
+        $this->assertNull($dto->company);
+        $this->assertNull($dto->designation);
+        $this->assertNull($dto->seat);
+    }
+
+    /**
+     * Regression — flat payload shape (legacy / existing tests must be unaffected).
+     *
+     * All existing tests use makeAttendee() which produces flat keys at the top level.
+     * This test explicitly verifies that the fix did not break flat-shape resolution.
+     */
+    public function test_maps_all_fields_from_flat_payload_shape(): void
+    {
+        $dto = AttendeeDTO::fromApiResponse(204, [
+            'ticket_id'     => 'T-FLAT-1',
+            'attendee_name' => 'Flat User',
+            'ticket_type'   => 'General',
+            'company'       => 'Acme',
+            'designation'   => 'Engineer',
+            'seat'          => 'A1',
+            'metadata'      => ['badge' => 'blue'],
+        ]);
+
+        $this->assertSame('T-FLAT-1',  $dto->ticket_id);
+        $this->assertSame(204,         $dto->event_id);
+        $this->assertSame('Flat User', $dto->attendee_name);
+        $this->assertSame('General',   $dto->ticket_type);
+        $this->assertSame('Acme',      $dto->company);
+        $this->assertSame('Engineer',  $dto->designation);
+        $this->assertSame('A1',        $dto->seat);
+        $this->assertSame(['badge' => 'blue'], $dto->metadata);
+    }
+
+    /**
+     * Regression — nested account shape delivered via the HTTP repository.
+     *
+     * Verifies that HttpExplaraXAttendeeRepository correctly maps a real-API-shaped
+     * HTTP response. Only attendee_name is asserted from account; other fields are
+     * absent in this payload and expected to be null.
+     */
+    public function test_fetches_attendees_with_nested_account_shape(): void
+    {
+        Http::fake([
+            'https://payments.explarax.com/api/event/204/attendees*' => Http::response([
+                ['ticket_id' => 86, 'account' => ['name' => 'Pankaj Kumar']],
+                ['ticket_id' => 87, 'account' => ['name' => 'Jane Doe']],
+            ], 200),
+        ]);
+
+        $result = $this->repo->fetchAllForEvent(204);
+
+        $this->assertCount(2, $result);
+        $this->assertSame('86',           $result[0]->ticket_id);
+        $this->assertSame('Pankaj Kumar', $result[0]->attendee_name);
+        $this->assertSame('87',           $result[1]->ticket_id);
+        $this->assertSame('Jane Doe',     $result[1]->attendee_name);
+    }
+
+    /**
+     * Regression — PII is stripped even when payload uses nested account shape.
+     */
+    public function test_pii_fields_are_stripped_from_nested_shape_dtos(): void
+    {
+        Http::fake([
+            'https://payments.explarax.com/api/event/204/attendees*' => Http::response([
+                [
+                    'ticket_id'  => 99,
+                    'account'    => ['name' => 'PII Test User'],
+                    'email'      => 'also@excluded.com',
+                    'payment_id' => 'pay_xyz',
+                ],
+            ], 200),
+        ]);
+
+        $result = $this->repo->fetchAllForEvent(204);
+
+        $this->assertCount(1, $result);
+        $dto = $result[0];
+
+        $this->assertSame('PII Test User', $dto->attendee_name);
+        $this->assertObjectNotHasProperty('email',      $dto);
+        $this->assertObjectNotHasProperty('phone',      $dto);
+        $this->assertObjectNotHasProperty('payment_id', $dto);
+    }
 }

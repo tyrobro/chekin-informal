@@ -24,6 +24,19 @@ class HttpExplaraXAttendeeRepository implements ExplaraXAttendeeRepository
 
     /**
      * Fetch all attendees for the given event from the ExplaraX Payments API.
+     *
+     * ┌─────────────────────────────────────────────────────────────────────┐
+     * │ TABLE BOUNDARY — READ SOURCE                                        │
+     * │                                                                     │
+     * │ This method calls the ExplaraX CORE Payments API:                  │
+     * │   GET {EXPLARA_PAYMENTS_URL}/api/event/{event_id}/attendees         │
+     * │                                                                     │
+     * │ That endpoint reads from the ExplaraX core PostgreSQL database,     │
+     * │ NOT from Supabase. The Supabase table is named event_attendees and  │
+     * │ is the WRITE destination used by SupabaseUpsertService. These are   │
+     * │ two completely separate databases on two separate hosts.            │
+     * └─────────────────────────────────────────────────────────────────────┘
+     *
      * Handles pagination automatically. PII is stripped by AttendeeDTO::fromApiResponse.
      *
      * @return AttendeeDTO[]
@@ -31,6 +44,7 @@ class HttpExplaraXAttendeeRepository implements ExplaraXAttendeeRepository
      */
     public function fetchAllForEvent(int $eventId): array
     {
+         
         $baseUrl = rtrim(
             (string) config('services.explara.payments_url', env('EXPLARA_PAYMENTS_URL', 'https://payments.explarax.com')),
             '/'
@@ -42,23 +56,24 @@ class HttpExplaraXAttendeeRepository implements ExplaraXAttendeeRepository
 
         while ($url !== null) {
             $response = $this->fetchWithRetry($url, $token);
-            $body     = $response->json();
+           $body     = $response->json();
 
             // Support both paginated responses (with a 'data' key) and flat array responses
-            $records = is_array($body['data'] ?? null) ? $body['data'] : $body;
+           $records = is_array($body['data'] ?? null) ? $body['data'] : $body;
 
-            foreach ($records as $record) {
-                if (is_array($record)) {
-                    $allDtos[] = AttendeeDTO::fromApiResponse($eventId, $record);
-                }
-            }
+           foreach ($records as $record) {
+               if (is_array($record)) {
+                   $allDtos[] = AttendeeDTO::fromApiResponse($eventId, $record);
+               }
+           }
 
             // Advance to the next page if available (Laravel-style pagination or JSON:API links)
             $nextPageUrl = $body['next_page_url'] ?? ($body['links']['next'] ?? null);
-            $url = is_string($nextPageUrl) && $nextPageUrl !== '' ? $nextPageUrl : null;
+           $url = is_string($nextPageUrl) && $nextPageUrl !== '' ? $nextPageUrl : null;
         }
 
-        return $allDtos;
+    return $allDtos;
+
     }
 
     /**

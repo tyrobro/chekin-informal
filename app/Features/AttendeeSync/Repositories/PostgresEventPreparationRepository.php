@@ -43,4 +43,53 @@ class PostgresEventPreparationRepository implements EventPreparationRepository
             );
         });
     }
+
+    /**
+     * Fetch the most-recent preparation record for the given event.
+     * Returns null if no record exists yet.
+     */
+    public function findByEventId(int $eventId): ?EventPreparationDTO
+    {
+        $row = DB::table('event_preparations')
+            ->where('event_id', $eventId)
+            ->orderByDesc('updated_at')
+            ->first([
+                'event_id',
+                'sync_id',
+                'status',
+                'prepared_at',
+                'attendee_count',
+                'batch_count',
+                'error_message',
+            ]);
+
+        if ($row === null) {
+            return null;
+        }
+
+        return new EventPreparationDTO(
+            event_id:       (int) $row->event_id,
+            sync_id:        (string) $row->sync_id,
+            status:         (string) $row->status,
+            prepared_at:    isset($row->prepared_at) ? (string) $row->prepared_at : null,
+            attendee_count: isset($row->attendee_count) ? (int) $row->attendee_count : null,
+            batch_count:    isset($row->batch_count) ? (int) $row->batch_count : null,
+            error_message:  isset($row->error_message) ? (string) $row->error_message : null,
+        );
+    }
+
+    /**
+     * Increment the live processed count after each batch completes.
+     * Only touches attendee_count and updated_at — leaves status unchanged.
+     * Used by AttendeeSyncJob to stream real-time progress to the status endpoint.
+     */
+    public function updateProgress(int $eventId, int $processed): void
+    {
+        DB::table('event_preparations')
+            ->where('event_id', $eventId)
+            ->update([
+                'attendee_count' => $processed,
+                'updated_at'     => now(),
+            ]);
+    }
 }

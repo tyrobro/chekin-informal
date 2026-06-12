@@ -13,15 +13,29 @@ class SupabaseUpsertService
      * POST a batch of attendee rows to the Supabase REST API.
      * Uses ON CONFLICT (ticket_id) merge strategy — does NOT overwrite CheckIn fields.
      *
+     * Deduplication is applied before every POST: if the source API returned
+     * duplicate ticket_ids in the same batch, PostgreSQL would throw a 21000
+     * cardinality violation ("ON CONFLICT DO UPDATE command cannot affect row a
+     * second time"). We keep the LAST occurrence of each ticket_id so the most
+     * recent record wins, then re-index the array to produce a clean JSON array.
+     *
      * @param int   $batchNumber For logging/error context only
      * @param array $rows        Array of AttendeeUpsertDTO::toUpsertArray() results
      * @throws SupabaseBatchException after 3 failed retries
      */
     public function upsertBatch(int $batchNumber, array $rows): void
     {
+        // Deduplicate on ticket_id, keeping the last duplicate (array_reverse trick
+        // so that collect()->unique() retains the first of the reversed set, which
+        // is the last of the original). Re-index with values() for a clean JSON array.
+        $rows = collect(array_reverse($rows))
+            ->unique('ticket_id')
+            ->reverse()
+            ->values()
+            ->toArray();
         $supabaseUrl = rtrim((string) env('SUPABASE_URL', ''), '/');
         $serviceKey  = (string) env('SUPABASE_SERVICE_ROLE_KEY', '');
-        $endpoint    = "{$supabaseUrl}/rest/v1/attendees";
+        $endpoint    = "{$supabaseUrl}/rest/v1/event_attendees";
 
         $delays    = [2, 4, 8]; // exponential backoff seconds — set SUPABASE_RETRY_DELAY=0 to disable in tests
         $baseDelay = (int) env('SUPABASE_RETRY_DELAY', 1); // multiplier; 0 = instant retry

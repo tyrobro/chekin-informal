@@ -1,6 +1,7 @@
 <?php
 
 use App\Features\AttendeeSync\Http\Controllers\PrepareController;
+use App\Features\AttendeeSync\Http\Controllers\SyncStatusController;
 use App\Features\SyncBack\Http\Controllers\SyncBackController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,8 +12,8 @@ use Illuminate\Support\Facades\Route;
 |
 | POST /internal/checkin/prepare/{event_id}
 |   Triggers the attendee sync pipeline for the given event.
-|   Rate limited to 10 requests per minute per IP.
-|   Returns 202 (queued), 409 (already running), or 422 (validation error).
+|   Acquires a PostgreSQL advisory lock to prevent concurrent syncs.
+|   Returns 202 (accepted/queued), 409 (already running), 422 (validation).
 |
 | Requirements C1: 2.1, 2.4, 2.5
 |
@@ -22,6 +23,33 @@ Route::post(
     '/internal/checkin/prepare/{event_id}',
     PrepareController::class
 )->middleware('throttle:10,1');
+
+/*
+|--------------------------------------------------------------------------
+|
+| GET /internal/checkin/prepare/{event_id}/status
+|   Returns the live sync progress for the given event.
+|   Reads from the event_preparations table — written by AttendeeSyncJob
+|   after each batch so the frontend progress bar advances in real time.
+|
+|   Response shape:
+|     { status: 'pending'|'processing'|'completed'|'failed',
+|       processed: <int>, total: <int>, failed: <int> }
+|
+|   Terminal status values the React poller stops on:
+|     'completed' → show success state, update event buttons to Re-sync
+|     'failed'    → show error state, show Retry button
+|
+|   In-flight values (keep polling):
+|     'processing' → job is running, progress bar advancing
+|     'pending'    → job queued, worker not yet started
+|
+*/
+
+Route::get(
+    '/internal/checkin/prepare/{event_id}/status',
+    SyncStatusController::class
+)->middleware('throttle:60,1');
 
 /*
 |--------------------------------------------------------------------------

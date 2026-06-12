@@ -1,13 +1,13 @@
+@import 'tailwindcss';
+
+/* ── Global base ── */
 :root {
-  font-family: var(--font-family, 'Inter', 'Segoe UI', sans-serif);
+  font-family: 'Inter', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: var(--color-text, #3B3535);
-  background-color: var(--color-bg, #ffffff);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 *,
@@ -20,4 +20,6 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #f8fafc; /* slate-50 */
+  color: #1e293b;             /* slate-800 */
 }

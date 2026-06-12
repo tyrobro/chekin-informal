@@ -27,7 +27,7 @@ class SupabaseUpsertServiceTest extends TestCase
     public function test_upserts_successfully_after_two_failures(): void
     {
         Http::fake([
-            'https://test.supabase.co/rest/v1/attendees*' => Http::sequence()
+            'https://test.supabase.co/rest/v1/event_attendees*' => Http::sequence()
                 ->push('Server Error', 500)
                 ->push('Server Error', 500)
                 ->push('', 201),
@@ -43,7 +43,7 @@ class SupabaseUpsertServiceTest extends TestCase
     public function test_throws_exception_after_exhausting_retries(): void
     {
         Http::fake([
-            'https://test.supabase.co/rest/v1/attendees*' => Http::sequence()
+            'https://test.supabase.co/rest/v1/event_attendees*' => Http::sequence()
                 ->push('Server Error', 500)
                 ->push('Server Error', 500)
                 ->push('Server Error', 500),
@@ -58,7 +58,7 @@ class SupabaseUpsertServiceTest extends TestCase
     public function test_succeeds_on_first_attempt(): void
     {
         Http::fake([
-            'https://test.supabase.co/rest/v1/attendees*' => Http::response('', 201),
+            'https://test.supabase.co/rest/v1/event_attendees*' => Http::response('', 201),
         ]);
 
         $this->service->upsertBatch(1, [['ticket_id' => 'T1', 'event_id' => 1]]);
@@ -70,7 +70,7 @@ class SupabaseUpsertServiceTest extends TestCase
     public function test_sends_correct_headers(): void
     {
         Http::fake([
-            'https://test.supabase.co/rest/v1/attendees*' => Http::response('', 201),
+            'https://test.supabase.co/rest/v1/event_attendees*' => Http::response('', 201),
         ]);
 
         $this->service->upsertBatch(1, []);

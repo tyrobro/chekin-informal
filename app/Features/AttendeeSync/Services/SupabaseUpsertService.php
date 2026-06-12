@@ -19,9 +19,9 @@ class SupabaseUpsertService
      */
     public function upsertBatch(int $batchNumber, array $rows): void
     {
-        $supabaseUrl = rtrim((string) config('services.supabase.url', ''), '/');
-        $serviceKey  = (string) config('services.supabase.service_role_key', '');
-        $endpoint    = "{$supabaseUrl}/rest/v1/attendees";
+	$supabaseUrl = rtrim((string) config('services.supabase.url', ''), '/');
+	$serviceKey  = (string) config('services.supabase.service_role_key', '');
+	$endpoint    = "{$supabaseUrl}/rest/v1/event_attendees";
 
         $delays    = [2, 4, 8]; // exponential backoff seconds — set SUPABASE_RETRY_DELAY=0 to disable in tests
         $baseDelay = (int) config('services.supabase.retry_delay', 1); // multiplier; 0 = instant retry

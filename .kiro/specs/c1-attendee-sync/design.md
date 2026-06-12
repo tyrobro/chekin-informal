@@ -174,7 +174,7 @@ class SupabaseUpsertService
 }
 ```
 
-- Posts to `{SUPABASE_URL}/rest/v1/attendees` with `Prefer: resolution=merge-duplicates`.
+- Posts to `{SUPABASE_URL}/rest/v1/event_attendees` with `Prefer: resolution=merge-duplicates`.
 - Sets `on_conflict=ticket_id` query param.
 - Retries with exponential backoff (2s → 4s → 8s, max 3 retries).
 
@@ -253,18 +253,18 @@ CREATE UNIQUE INDEX idx_event_preparations_event_id ON event_preparations (event
 CREATE INDEX        idx_event_preparations_sync_id  ON event_preparations (sync_id);
 ```
 
-### Supabase — `attendees`
+### Supabase — `event_attendees`
 
 ```sql
-CREATE TABLE attendees (
+CREATE TABLE event_attendees (
     ticket_id        TEXT          PRIMARY KEY,
-    event_id         BIGINT        NOT NULL,
+    event_id         TEXT          NOT NULL,
     attendee_name    TEXT          NOT NULL,
     ticket_type      TEXT,
     company          TEXT,
     designation      TEXT,
     seat             TEXT,
-    qr_token         CHAR(64)      NOT NULL,  -- HMAC-SHA256 hex
+    qr_token         TEXT          NOT NULL UNIQUE,  -- HMAC-SHA256 hex
     metadata         JSONB         DEFAULT '{}',
     -- check-in fields managed exclusively by the check-in service:
     checked_in_at    TIMESTAMPTZ,
@@ -274,14 +274,15 @@ CREATE TABLE attendees (
     updated_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_attendees_event_id  ON attendees (event_id);
-CREATE INDEX idx_attendees_qr_token  ON attendees (qr_token);
+CREATE INDEX idx_event_attendees_event  ON event_attendees (event_id);
+CREATE INDEX idx_event_attendees_qr     ON event_attendees (qr_token);
+CREATE INDEX idx_event_attendees_name   ON event_attendees (event_id, attendee_name);
 ```
 
 **Upsert strategy** (executed by `SupabaseUpsertService`):
 
 ```sql
-INSERT INTO attendees
+INSERT INTO event_attendees
     (ticket_id, event_id, attendee_name, ticket_type, company, designation, seat, qr_token, metadata)
 VALUES (...)
 ON CONFLICT (ticket_id) DO UPDATE SET
@@ -388,7 +389,7 @@ ON CONFLICT (ticket_id) DO UPDATE SET
 
 ### Property 10: Re-sync is additive — new rows inserted, existing rows updated, none deleted
 
-*For any* initial Supabase state with M existing attendee rows and any set of K new attendees added in ExplaraX, after a re-sync the Supabase `attendees` table SHALL contain at least M + K rows, the original M rows SHALL still be present with updated metadata, and no row from the original M SHALL have been deleted.
+*For any* initial Supabase state with M existing attendee rows and any set of K new attendees added in ExplaraX, after a re-sync the Supabase `event_attendees` table SHALL contain at least M + K rows, the original M rows SHALL still be present with updated metadata, and no row from the original M SHALL have been deleted.
 
 **Validates: Requirements 9.3**
 

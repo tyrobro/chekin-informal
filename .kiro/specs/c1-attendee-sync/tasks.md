@@ -105,7 +105,7 @@ Implement the attendee sync pipeline on a fresh Laravel 12 project. The plan sta
 
 - [x] 7. Implement `SupabaseUpsertService`
   - [x] 7.1 Implement `upsertBatch(int $batchNumber, array $rows): void`
-    - POST to `{SUPABASE_URL}/rest/v1/attendees?on_conflict=ticket_id`
+    - POST to `{SUPABASE_URL}/rest/v1/event_attendees?on_conflict=ticket_id`
     - Set headers: `Authorization: Bearer {SUPABASE_SERVICE_ROLE_KEY}`, `Prefer: resolution=merge-duplicates`, `Content-Type: application/json`
     - The JSON body must contain only the 9 whitelisted fields (enforced by `AttendeeUpsertDTO::toUpsertArray()`)
     - On non-2xx, retry with exponential backoff: wait `2^(attempt-1) * 2` seconds; max 3 retries

@@ -21,7 +21,7 @@ class SupabaseUpsertService
     {
         $supabaseUrl = rtrim((string) env('SUPABASE_URL', ''), '/');
         $serviceKey  = (string) env('SUPABASE_SERVICE_ROLE_KEY', '');
-        $endpoint    = "{$supabaseUrl}/rest/v1/attendees";
+        $endpoint    = "{$supabaseUrl}/rest/v1/event_attendees";
 
         $delays    = [2, 4, 8]; // exponential backoff seconds — set SUPABASE_RETRY_DELAY=0 to disable in tests
         $baseDelay = (int) env('SUPABASE_RETRY_DELAY', 1); // multiplier; 0 = instant retry

@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { fetchAttendeeCount } from '../../api/eventApi.js';
 import PrepareSyncModal from './PrepareSyncModal.jsx';
 import StaffManagement from '../staff/StaffManagement.jsx';
+import LiveDashboard   from '../live-dashboard/LiveDashboard.jsx';
 
 /** Max concurrent attendee-count requests to avoid rate-limiting. */
 const BATCH_SIZE = 3;
@@ -61,6 +62,8 @@ function EventDashboard() {
 
   // null = show event list; an event object = show StaffManagement for that event
   const [staffEvent, setStaffEvent] = useState(null);
+  // null = show event list; an event object = show LiveDashboard for that event
+  const [liveEvent,  setLiveEvent]  = useState(null);
 
   useEffect(() => {
     if (!events.length || !token) return;
@@ -88,6 +91,22 @@ function EventDashboard() {
   const handleInviteStaffClick = useCallback((event) => {
     setStaffEvent(event);
   }, []);
+
+  const handleLiveDashboardClick = useCallback((event) => {
+    setLiveEvent(event);
+  }, []);
+
+  // ── Live Dashboard view ──
+  if (liveEvent) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <LiveDashboard
+          event={liveEvent}
+          onBack={() => setLiveEvent(null)}
+        />
+      </div>
+    );
+  }
 
   // ── Staff Management view ──
   if (staffEvent) {
@@ -273,9 +292,19 @@ function EventDashboard() {
                           </svg>
                           Invite Staff
                         </button>
-                        <button disabled className="inline-flex items-center px-3 py-2 rounded-lg text-xs
-                                                    font-medium text-slate-400 bg-slate-50 border border-slate-200
-                                                    cursor-not-allowed">
+                        <button
+                          onClick={() => handleLiveDashboardClick(event)}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs
+                                     font-semibold text-white border-0
+                                     transition-all duration-200
+                                     focus:outline-none focus:ring-2 focus:ring-offset-2"
+                          style={{ background: '#5BC97C' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = '#47b568'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = '#5BC97C'; }}
+                        >
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                          </svg>
                           Live Dashboard
                         </button>
                       </>

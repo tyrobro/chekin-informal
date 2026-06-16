@@ -1,0 +1,117 @@
+/* ─────────────────────────────────────────────
+   GateBreakdown — per-gate check-in table
+   ───────────────────────────────────────────── */
+
+.wrapper {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  box-shadow:
+    0 2px 8px  rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.wrapper:hover {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 12px 28px rgba(0, 0, 0, 0.07);
+}
+
+/* ── Table base ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-family, 'Inter', sans-serif);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+/* ── Header row ── */
+.th {
+  padding: 14px 20px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b0b0b0;
+  background: #fafafa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+}
+
+.th:first-child { border-radius: 16px 0 0 0; }
+.th:last-child  { border-radius: 0 16px 0 0; }
+
+/* ── Data rows ── */
+.tr {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  transition: background 0.15s ease-in-out;
+}
+
+.tr:last-child { border-bottom: none; }
+
+.tr:hover { background: #f7f4ff; }
+
+.td {
+  padding: 13px 20px;
+  vertical-align: middle;
+  color: var(--color-text, #3B3535);
+}
+
+/* ── Cell types ── */
+.gateName {
+  font-weight: 700;
+  color: #2d2d2d;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--color-primary, #7E57C2);
+  text-align: right;
+  width: 80px;
+}
+
+.pct {
+  text-align: right;
+  color: #aaa;
+  width: 52px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* ── Inline bar chart ── */
+.barCell {
+  width: 200px;
+  padding-right: 20px;
+}
+
+.barTrack {
+  height: 7px;
+  background: rgba(126, 87, 194, 0.09);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, #7E57C2, #9575CD);
+  border-radius: 999px;
+  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Empty state ── */
+.empty {
+  padding: 48px 24px;
+  text-align: center;
+  font-family: var(--font-family, 'Inter', sans-serif);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: #c0c0c0;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}

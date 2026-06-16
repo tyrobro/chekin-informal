@@ -1,29 +1,21 @@
 /**
- * RecentScans — scrollable feed of the last 50 scan events.
- *
- * Each row shows: Name, Ticket Type, Gate, Scan Time, Method, Result.
- * New rows animate in from the top.
- *
- * @param {{ scans: ScanRecord[] }} props
+ * RecentScans — scrollable feed of the last 50 scans.
+ * New rows slide in with Framer Motion spring physics.
+ * Existing rows smoothly shift down via the `layout` prop.
  */
 
+import { AnimatePresence, motion } from 'framer-motion';
 import styles from './RecentScans.module.css';
 
-/** Format ISO timestamp to human-readable HH:MM:SS */
 function fmtTime(iso) {
   if (!iso) return '—';
   try {
     return new Date(iso).toLocaleTimeString(undefined, {
-      hour:   '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
     });
-  } catch {
-    return iso;
-  }
+  } catch { return iso; }
 }
 
-/** Result chip colours */
 const RESULT_STYLES = {
   success:   { label: 'Admitted',  cls: 'success' },
   denied:    { label: 'Denied',    cls: 'denied'  },
@@ -32,12 +24,21 @@ const RESULT_STYLES = {
 
 function ResultChip({ result }) {
   const cfg = RESULT_STYLES[result] ?? { label: result ?? '—', cls: 'warn' };
-  return (
-    <span className={`${styles.chip} ${styles[cfg.cls]}`}>
-      {cfg.label}
-    </span>
-  );
+  return <span className={`${styles.chip} ${styles[cfg.cls]}`}>{cfg.label}</span>;
 }
+
+// Row spring — new items drop in from above; layout shifts existing rows.
+const rowVariants = {
+  initial: { opacity: 0, y: -20, scale: 0.98 },
+  animate: { opacity: 1, y: 0,   scale: 1    },
+  exit:    { opacity: 0,          scale: 0.97 },
+};
+
+const rowTransition = {
+  type: 'spring',
+  stiffness: 300,
+  damping: 24,
+};
 
 function RecentScans({ scans }) {
   if (!scans.length) {
@@ -56,47 +57,39 @@ function RecentScans({ scans }) {
       aria-live="polite"
       aria-relevant="additions"
     >
-      <table className={styles.table}>
-        <thead className={styles.thead}>
-          <tr>
-            <th className={styles.th} scope="col">Attendee</th>
-            <th className={styles.th} scope="col">Ticket Type</th>
-            <th className={styles.th} scope="col">Gate</th>
-            <th className={styles.th} scope="col">Time</th>
-            <th className={styles.th} scope="col">Staff</th>
-            <th className={styles.th} scope="col">Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          {scans.map((scan, idx) => (
-            <tr
-              key={scan.id ?? idx}
-              className={`${styles.tr} ${idx === 0 ? styles.newRow : ''}`}
+      {/* Sticky header — rendered outside the animated list so it never moves */}
+      <div className={styles.tableHeader}>
+        <span className={styles.th}>Attendee</span>
+        <span className={styles.th}>Ticket Type</span>
+        <span className={styles.th}>Gate</span>
+        <span className={styles.th}>Time</span>
+        <span className={styles.th}>Staff</span>
+        <span className={styles.th}>Result</span>
+      </div>
+
+      <ul className={styles.list}>
+        <AnimatePresence initial={false}>
+          {scans.map((scan) => (
+            <motion.li
+              key={scan.id ?? scan.client_scan_id ?? scan.scanned_at}
+              layout
+              variants={rowVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={rowTransition}
+              className={styles.row}
             >
-              <td className={styles.td}>
-                <span className={styles.name}>{scan.attendee_name ?? '—'}</span>
-              </td>
-              <td className={styles.td}>
-                <span className={styles.type}>{scan.ticket_type ?? '—'}</span>
-              </td>
-              <td className={styles.td}>
-                <span className={styles.gate}>{scan.gate ?? '—'}</span>
-              </td>
-              <td className={`${styles.td} ${styles.time}`}>
-                {fmtTime(scan.scanned_at)}
-              </td>
-              <td className={styles.td}>
-                <span className={styles.method}>
-                  {scan.staff_user ?? '—'}
-                </span>
-              </td>
-              <td className={styles.td}>
-                <ResultChip result={scan.result} />
-              </td>
-            </tr>
+              <span className={styles.name}>{scan.attendee_name ?? '—'}</span>
+              <span className={styles.type}>{scan.ticket_type   ?? '—'}</span>
+              <span className={styles.gate}>{scan.gate          ?? '—'}</span>
+              <span className={styles.time}>{fmtTime(scan.scanned_at)}</span>
+              <span className={styles.staff}>{scan.staff_user   ?? '—'}</span>
+              <ResultChip result={scan.result} />
+            </motion.li>
           ))}
-        </tbody>
-      </table>
+        </AnimatePresence>
+      </ul>
     </div>
   );
 }

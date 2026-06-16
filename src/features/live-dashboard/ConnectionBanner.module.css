@@ -1,6 +1,4 @@
-/* ─────────────────────────────────────────────
-   ConnectionBanner — polling fallback strip
-   ───────────────────────────────────────────── */
+/* ── ConnectionBanner — polling fallback strip (glassmorphism) ─────────────── */
 
 .banner {
   display: flex;
@@ -8,67 +6,63 @@
   gap: 10px;
   padding: 10px 18px;
 
-  background: linear-gradient(
-    135deg,
-    rgba(245, 158, 11, 0.09) 0%,
-    rgba(249, 210, 214, 0.18) 100%
-  );
+  /* Glassmorphism treatment */
+  background: rgba(255, 255, 255, 0.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(245, 158, 11, 0.28);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.08);
+
+  /* Soft amber diffused shadow */
+  box-shadow: 0 10px 40px -10px rgba(245, 158, 11, 0.20);
 
   font-family: var(--font-family, 'Inter', sans-serif);
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #78350f;
-
-  transition: all 0.2s ease-in-out;
 }
 
-/* Pulsing amber dot */
+/* Pulsing amber dot with ripple */
 .dot {
   width: 9px;
   height: 9px;
   border-radius: 50%;
   background: #F59E0B;
   flex-shrink: 0;
-  animation: pulse 1.8s ease-in-out infinite;
+  animation: dotPulse 1.8s ease-in-out infinite;
 }
 
-@keyframes pulse {
+@keyframes dotPulse {
   0%, 100% {
     opacity: 1;
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 0 0   rgba(245, 158, 11, 0.50);
   }
   50% {
     opacity: 0.55;
-    transform: scale(0.82);
-    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+    transform: scale(0.80);
+    box-shadow: 0 0 0 7px rgba(245, 158, 11, 0);
   }
 }
 
-.text {
-  flex: 1;
-  font-weight: 600;
-}
+.text { flex: 1; }
 
 .retryBtn {
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.40);
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.36);
   border-radius: 8px;
-  padding: 4px 12px;
+  padding: 4px 13px;
   font-family: var(--font-family, 'Inter', sans-serif);
   font-size: 0.78rem;
   font-weight: 700;
   color: #78350f;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: background 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
 }
 
 .retryBtn:hover {
-  background: rgba(245, 158, 11, 0.22);
+  background: rgba(245, 158, 11, 0.20);
   transform: translateY(-1px);
 }
 

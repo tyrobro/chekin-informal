@@ -1,18 +1,10 @@
 /**
  * LiveDashboard — Slice B3 entry point.
- *
- * Renders:
- *   - ConnectionBanner  (polling fallback indicator)
- *   - MetricsBar        (Total / Arrived / Absent / Arrival Rate)
- *   - GateBreakdown     (per-gate check-in table)
- *   - RecentScans       (scrolling feed of last 50 scans)
- *
- * Props:
- *   event  — { id: string, name: string }
- *   onBack — () => void
+ * All data logic is unchanged — only presentation layer upgraded.
  */
 
 import { useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLiveDashboard }  from './useLiveDashboard.js';
 import MetricsBar            from './MetricsBar.jsx';
 import GateBreakdown         from './GateBreakdown.jsx';
@@ -20,36 +12,44 @@ import RecentScans           from './RecentScans.jsx';
 import ConnectionBanner      from './ConnectionBanner.jsx';
 import styles                from './LiveDashboard.module.css';
 
-function LiveDashboard({ event, onBack }) {
-  const {
-    stats,
-    recentScans,
-    isLoading,
-    loadError,
-    mode,
-    refresh,
-  } = useLiveDashboard(event.id);
+const pageVariants = {
+  initial:  { opacity: 0, y: 10 },
+  animate:  { opacity: 1, y: 0  },
+};
+const pageTransition = { duration: 0.3, ease: [0.4, 0, 0.2, 1] };
 
-  // "Retry live" taps into refresh — the hook will re-attempt the WS
-  // connection automatically; refreshing REST data as a side-effect is
-  // useful either way.
-  const handleRetry = useCallback(() => {
-    refresh();
-  }, [refresh]);
+const sectionVariants = {
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0  },
+};
+
+function LiveDashboard({ event, onBack }) {
+  const { stats, recentScans, isLoading, loadError, mode, refresh } =
+    useLiveDashboard(event.id);
+
+  const handleRetry = useCallback(() => refresh(), [refresh]);
 
   return (
-    <div className={styles.page}>
-
-      {/* ── Page header ── */}
+    <motion.div
+      className={styles.page}
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      transition={pageTransition}
+    >
+      {/* ── Sticky glassmorphism header ── */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <button
+          <motion.button
             className={styles.backBtn}
             onClick={onBack}
             aria-label="Back to events"
+            whileHover={{ x: -2, scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.15 }}
           >
             ← Back
-          </button>
+          </motion.button>
           <div>
             <h1 className={styles.title}>Live Dashboard</h1>
             <p className={styles.subtitle}>{event.name}</p>
@@ -57,30 +57,49 @@ function LiveDashboard({ event, onBack }) {
         </div>
 
         <div className={styles.headerRight}>
-          {/* Live indicator dot */}
-          <span
-            className={`${styles.liveChip} ${mode === 'live' ? styles.livePulse : styles.liveOff}`}
-            aria-label={mode === 'live' ? 'Live connection active' : 'Connection paused'}
-          >
-            <span className={styles.liveDot} aria-hidden="true" />
-            {mode === 'live' ? 'LIVE' : 'PAUSED'}
-          </span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={mode}
+              initial={{ opacity: 0, scale: 0.88 }}
+              animate={{ opacity: 1, scale: 1    }}
+              exit={{    opacity: 0, scale: 0.88 }}
+              transition={{ duration: 0.2 }}
+              className={`${styles.liveChip} ${mode === 'live' ? styles.livePulse : styles.liveOff}`}
+              aria-label={mode === 'live' ? 'Live connection active' : 'Connection paused'}
+            >
+              <span className={styles.liveDot} aria-hidden="true" />
+              {mode === 'live' ? 'LIVE' : 'PAUSED'}
+            </motion.span>
+          </AnimatePresence>
 
-          <button
+          <motion.button
             className={styles.refreshBtn}
             onClick={refresh}
             aria-label="Manually refresh data"
-            title="Refresh now"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.15 }}
           >
             ↻ Refresh
-          </button>
+          </motion.button>
         </div>
       </header>
 
-      {/* ── Connection banner (polling mode) ── */}
-      <ConnectionBanner mode={mode} onRetry={handleRetry} />
+      {/* ── Connection banner ── */}
+      <AnimatePresence>
+        {mode === 'polling' && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{    opacity: 0, height: 0      }}
+            transition={{ duration: 0.22 }}
+          >
+            <ConnectionBanner mode={mode} onRetry={handleRetry} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* ── Loading state ── */}
+      {/* ── Loading ── */}
       {isLoading && (
         <div className={styles.loadingState} role="status">
           <span className={styles.spinner} aria-hidden="true" />
@@ -88,58 +107,70 @@ function LiveDashboard({ event, onBack }) {
         </div>
       )}
 
-      {/* ── Error state ── */}
-      {!isLoading && loadError && (
-        <div className={styles.errorState} role="alert">
-          <span>Could not load data: {loadError}</span>
-          <button className={styles.retryInline} onClick={refresh}>
-            Retry
-          </button>
-        </div>
-      )}
+      {/* ── Error ── */}
+      <AnimatePresence>
+        {!isLoading && loadError && (
+          <motion.div
+            className={styles.errorState}
+            role="alert"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{    opacity: 0        }}
+          >
+            <span>Could not load data: {loadError}</span>
+            <button className={styles.retryInline} onClick={refresh}>Retry</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* ── Main content (shown even while polling — data may be stale) ── */}
+      {/* ── Main content ── */}
       {!isLoading && (
-        <div className={styles.content}>
-
+        <motion.div
+          className={styles.content}
+          initial="initial"
+          animate="animate"
+          variants={{ animate: { transition: { staggerChildren: 0.09 } } }}
+        >
           {/* KPI tiles */}
-          <section aria-labelledby="metrics-heading">
-            <h2 id="metrics-heading" className={styles.sectionHeading}>
-              Overview
-            </h2>
+          <motion.section
+            variants={sectionVariants}
+            transition={{ duration: 0.35 }}
+            aria-labelledby="metrics-heading"
+          >
+            <h2 id="metrics-heading" className={styles.sectionHeading}>Overview</h2>
             <MetricsBar
               total={stats.total}
               arrived={stats.arrived}
               absent={stats.absent}
               arrivalRate={stats.arrivalRate}
             />
-          </section>
+          </motion.section>
 
           {/* Gate breakdown */}
-          <section aria-labelledby="gate-heading">
-            <h2 id="gate-heading" className={styles.sectionHeading}>
-              Per-Gate Breakdown
-            </h2>
-            <GateBreakdown
-              gateBreakdown={stats.gateBreakdown}
-              total={stats.arrived}
-            />
-          </section>
+          <motion.section
+            variants={sectionVariants}
+            transition={{ duration: 0.35 }}
+            aria-labelledby="gate-heading"
+          >
+            <h2 id="gate-heading" className={styles.sectionHeading}>Per-Gate Breakdown</h2>
+            <GateBreakdown gateBreakdown={stats.gateBreakdown} total={stats.arrived} />
+          </motion.section>
 
-          {/* Recent scans feed */}
-          <section aria-labelledby="scans-heading">
+          {/* Recent scans */}
+          <motion.section
+            variants={sectionVariants}
+            transition={{ duration: 0.35 }}
+            aria-labelledby="scans-heading"
+          >
             <h2 id="scans-heading" className={styles.sectionHeading}>
               Recent Scans
-              <span className={styles.scanCount}>
-                {recentScans.length} shown
-              </span>
+              <span className={styles.scanCount}>{recentScans.length} shown</span>
             </h2>
             <RecentScans scans={recentScans} />
-          </section>
-
-        </div>
+          </motion.section>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }
 

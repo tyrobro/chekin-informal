@@ -1,30 +1,42 @@
-/* ─────────────────────────────────────────────
-   LiveDashboard — page shell
-   ───────────────────────────────────────────── */
+/* ── LiveDashboard — page shell ────────────────────────────────────────────── */
 
 .page {
   max-width: 1140px;
   margin: 0 auto;
-  padding: 36px 28px;
+  padding: 36px 28px 56px;
   font-family: var(--font-family, 'Inter', sans-serif);
   display: flex;
   flex-direction: column;
   gap: 28px;
 }
 
-/* ── Page header ── */
+/* ── Glassmorphism sticky header ── */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+
+  /* Glass effect */
+  background: rgba(255, 255, 255, 0.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(126, 87, 194, 0.08);
+
+  /* Bleed to page edges */
+  margin-left: -28px;
+  margin-right: -28px;
+  padding: 18px 28px;
 }
 
 .headerLeft {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 14px;
 }
 
 .headerRight {
@@ -40,46 +52,38 @@
   align-items: center;
   gap: 5px;
   padding: 7px 14px;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(126, 87, 194, 0.15);
   border-radius: 10px;
   font-family: var(--font-family, 'Inter', sans-serif);
   font-size: 0.85rem;
   font-weight: 600;
-  color: #555;
+  color: #6e5a8e;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 4px rgba(126, 87, 194, 0.08);
   white-space: nowrap;
 }
 
-.backBtn:hover {
-  background: #f5f3ff;
-  border-color: rgba(126, 87, 194, 0.3);
-  color: var(--color-primary, #7E57C2);
-  transform: translateX(-2px);
-}
-
 .backBtn:focus-visible {
-  outline: 2px solid var(--color-primary-light, #9575CD);
+  outline: 2px solid #9575CD;
   outline-offset: 2px;
 }
 
-/* ── Titles ── */
+/* ── Page title ── */
 .title {
   margin: 0 0 3px 0;
   font-size: 1.5rem;
   font-weight: 900;
-  color: var(--color-primary, #7E57C2);
-  letter-spacing: -0.02em;
+  color: #7E57C2;
+  letter-spacing: -0.025em;
   line-height: 1.15;
 }
 
 .subtitle {
   margin: 0;
-  font-size: 0.875rem;
-  color: #999;
+  font-size: 0.85rem;
   font-weight: 500;
+  color: #b0a8c8;
 }
 
 /* ── Live / Paused chip ── */
@@ -89,23 +93,23 @@
   gap: 6px;
   padding: 5px 12px;
   border-radius: 999px;
-  font-size: 0.65rem;
+  font-size: 0.63rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
 }
 
 .livePulse {
   background: rgba(91, 201, 124, 0.12);
-  color: #1e6b3e;
-  border: 1px solid rgba(91, 201, 124, 0.4);
-  box-shadow: 0 0 0 3px rgba(91, 201, 124, 0.08);
+  color: #1a6b3e;
+  border: 1px solid rgba(91, 201, 124, 0.38);
+  box-shadow: 0 0 0 4px rgba(91, 201, 124, 0.07);
 }
 
 .liveOff {
   background: rgba(245, 158, 11, 0.10);
   color: #92400e;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  border: 1px solid rgba(245, 158, 11, 0.32);
 }
 
 .liveDot {
@@ -116,52 +120,51 @@
 }
 
 .livePulse .liveDot {
-  background: var(--color-success, #5BC97C);
-  animation: livePulseAnim 1.6s ease-in-out infinite;
+  background: #5BC97C;
+  animation: livePulse 1.6s ease-in-out infinite;
 }
 
-.liveOff .liveDot {
-  background: #F59E0B;
-}
+.liveOff .liveDot { background: #F59E0B; }
 
-@keyframes livePulseAnim {
-  0%, 100% { opacity: 1; transform: scale(1);    box-shadow: 0 0 0 0   rgba(91, 201, 124, 0.6); }
-  50%       { opacity: 0.7; transform: scale(0.85); box-shadow: 0 0 0 5px rgba(91, 201, 124, 0);   }
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0   rgba(91, 201, 124, 0.55);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.82);
+    box-shadow: 0 0 0 6px rgba(91, 201, 124, 0);
+  }
 }
 
 /* ── Refresh button ── */
 .refreshBtn {
   padding: 7px 16px;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.90);
+  border: 1px solid rgba(126, 87, 194, 0.15);
   border-radius: 10px;
   font-family: var(--font-family, 'Inter', sans-serif);
   font-size: 0.85rem;
   font-weight: 600;
-  color: #666;
+  color: #7E57C2;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 4px rgba(126, 87, 194, 0.08);
   white-space: nowrap;
 }
 
-.refreshBtn:hover {
-  background: #f5f3ff;
-  border-color: rgba(126, 87, 194, 0.3);
-  color: var(--color-primary, #7E57C2);
-}
-
 .refreshBtn:focus-visible {
-  outline: 2px solid var(--color-primary-light, #9575CD);
+  outline: 2px solid #9575CD;
   outline-offset: 2px;
 }
 
 /* ── Section headings ── */
 .sectionHeading {
-  margin: 0 0 12px 0;
-  font-size: 0.95rem;
+  margin: 0 0 14px 0;
+  font-size: 0.88rem;
   font-weight: 800;
-  color: #2d2d2d;
+  color: #3d2f5e;
   letter-spacing: -0.01em;
   display: flex;
   align-items: center;
@@ -171,8 +174,7 @@
 .scanCount {
   font-size: 0.7rem;
   font-weight: 600;
-  color: #c0c0c0;
-  letter-spacing: 0;
+  color: #c8c4d6;
 }
 
 /* ── Content stack ── */
@@ -187,9 +189,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: var(--font-size-sm, 0.875rem);
-  color: #aaa;
-  padding: 20px 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #b0a8c8;
+  padding: 24px 0;
 }
 
 /* ── Error state ── */
@@ -197,14 +200,14 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 20px;
-  font-size: var(--font-size-sm, 0.875rem);
+  padding: 14px 18px;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-error, #D64545);
+  color: #D64545;
   background: rgba(214, 69, 69, 0.05);
-  border: 1px solid rgba(214, 69, 69, 0.18);
+  border: 1px solid rgba(214, 69, 69, 0.16);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(214, 69, 69, 0.06);
+  box-shadow: 0 4px 16px -4px rgba(214, 69, 69, 0.10);
 }
 
 /* ── Spinner ── */
@@ -212,8 +215,8 @@
   display: inline-block;
   width: 20px;
   height: 20px;
-  border: 2.5px solid rgba(0, 0, 0, 0.08);
-  border-top-color: var(--color-primary, #7E57C2);
+  border: 2.5px solid rgba(126, 87, 194, 0.12);
+  border-top-color: #7E57C2;
   border-radius: 50%;
   animation: spin 0.65s linear infinite;
   flex-shrink: 0;
@@ -225,9 +228,9 @@
   margin-left: 4px;
   background: none;
   border: none;
-  color: var(--color-error, #D64545);
+  color: #D64545;
   font-family: var(--font-family, 'Inter', sans-serif);
-  font-size: var(--font-size-sm, 0.875rem);
+  font-size: 0.875rem;
   font-weight: 700;
   text-decoration: underline;
   cursor: pointer;

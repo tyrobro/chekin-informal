@@ -1,11 +1,9 @@
-/* ─────────────────────────────────────────────
-   MetricsBar — 4 KPI tiles
-   ───────────────────────────────────────────── */
+/* ── MetricsBar — KPI tile grid ────────────────────────────────────────────── */
 
 .bar {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
+  gap: 16px;
 }
 
 @media (min-width: 640px) {
@@ -15,63 +13,56 @@
 /* ── Tile card ── */
 .tile {
   position: relative;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  border: 1px solid rgba(126, 87, 194, 0.10);
   border-radius: 16px;
-  padding: 28px 20px 22px;
+
+  /* Generous internal padding so numbers breathe */
+  padding: 28px 24px 24px;
 
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   overflow: hidden;
-
-  /* Elevation */
-  box-shadow:
-    0 2px 8px  rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.05);
-
-  /* Lift on hover */
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   cursor: default;
+
+  /* Diffused brand-tinted shadow — no harsh black */
+  box-shadow: 0 10px 40px -10px rgba(126, 87, 194, 0.15);
+
+  /* Framer Motion drives the hover lift — CSS transition as baseline */
+  transition: box-shadow 0.2s ease-in-out;
 }
 
-.tile:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.06),
-    0 16px 32px rgba(0, 0, 0, 0.08);
-}
-
-/* Subtle top-left tinted quadrant */
+/* Tinted background wash */
 .tile::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--tile-bg, rgba(126, 87, 194, 0.06));
+  background: var(--tile-bg, rgba(126, 87, 194, 0.05));
   border-radius: inherit;
   pointer-events: none;
 }
 
-/* ── Label ── */
+/* ── Label (muted, uppercase micro) ── */
 .tileLabel {
   font-family: var(--font-family, 'Inter', sans-serif);
-  font-size: 0.68rem;
+  font-size: 0.67rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: #9e9e9e;
-  position: relative; /* above ::before */
+  color: #b0a8c8;        /* muted violet-grey for clear hierarchy */
+  position: relative;
 }
 
-/* ── Big number ── */
+/* ── KPI number (heavy) ── */
 .tileValue {
   font-family: var(--font-family, 'Inter', sans-serif);
-  font-size: clamp(2rem, 4.5vw, 2.75rem);
-  font-weight: 900;
-  color: var(--tile-accent, var(--color-primary, #7E57C2));
+  font-size: clamp(2.1rem, 4.5vw, 2.75rem);
+  font-weight: 800;
+  color: var(--tile-accent, #7E57C2);
   line-height: 1;
-  margin-top: 6px;
-  letter-spacing: -0.02em;
+  margin-top: 8px;
+  letter-spacing: -0.03em;
   position: relative;
 }
 
@@ -79,19 +70,20 @@
 .tileSub {
   font-family: var(--font-family, 'Inter', sans-serif);
   font-size: 0.75rem;
-  color: #bbb;
-  margin-top: 4px;
+  font-weight: 500;
+  color: #c8c4d6;
+  margin-top: 5px;
   position: relative;
 }
 
-/* ── Coloured bottom accent bar ── */
+/* ── Bottom accent bar ── */
 .accentBar {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: var(--tile-accent, var(--color-primary, #7E57C2));
-  opacity: 0.65;
+  height: 3px;
+  background: var(--tile-accent, #7E57C2);
+  opacity: 0.55;
   border-radius: 0 0 16px 16px;
 }

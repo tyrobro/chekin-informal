@@ -1,0 +1,81 @@
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\HttpExplaraXAttendeeRepositoryTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\QrTokenServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\SupabaseUpsertServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\Features\SyncBack\CheckinRecordDTOTest::test_all_checkin_methods_accepted(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\AttendeeBatchPayloadPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\AttendeeSyncJobIntegrationTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\BatchPartitionPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\C1ScenariosTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\CheckInFieldsPreservationPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\EventPreparationRecordPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\HmacKeyFormatPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\HmacKeyStabilityPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\PrepareEndpointTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\QrTokenDeterminismPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\SyncIdempotencePropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\SyncLogCorrelationPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\BatchPartitionerPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\EventFinderServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\FullSyncIntegrationTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostEventSyncCommandTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostEventSyncLoggerPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostEventSyncOrchestratorPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostEventSyncOrchestratorTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostgresCheckedInAttendeeRepositoryPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostgresCheckedInAttendeeRepositoryTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostgresCheckpointRepositoryPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostgresCheckpointRepositoryTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\RetryIntegrationTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\RetryServicePropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\RetryServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\RetrySyncControllerTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\SyncBackDispatcherPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\SyncBackDispatcherTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackEndpointTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackIdempotencyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackInvalidTicketsTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackLargeBatchTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   PASS  Tests\Feature\PostEventSync\SyncBackDispatcherPropertyTest
+  ✓ deterministic batch id                                               0.16s  
+
+  Tests:    1 passed (300 assertions)
+  Duration: 0.31s
+

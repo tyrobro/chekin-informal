@@ -1,0 +1,15 @@
+
+  GET|HEAD  / ........................................................................................................ routes/web.php:5
+  POST      api/internal/checkin/prepare/{event_id} ...................... App\Features\AttendeeSync\Http\Controllers\PrepareController
+  GET|HEAD  api/internal/checkin/prepare/{event_id}/status ............ App\Features\AttendeeSync\Http\Controllers\SyncStatusController
+  POST      api/internal/checkin/sync-back .............. checkin.sync-back › App\Features\SyncBack\Http\Controllers\SyncBackController
+  POST      internal/checkin/prepare/{event_id} .......................... App\Features\AttendeeSync\Http\Controllers\PrepareController
+  GET|HEAD  internal/checkin/prepare/{event_id}/status ................ App\Features\AttendeeSync\Http\Controllers\SyncStatusController
+  POST      internal/checkin/retry-sync/{event_id} .................... App\Features\PostEventSync\Http\Controllers\RetrySyncController
+  POST      internal/checkin/sync-back .................. checkin.sync-back › App\Features\SyncBack\Http\Controllers\SyncBackController
+  GET|HEAD  storage/{path} ........ storage.local › vendor/laravel/framework/src/Illuminate/Filesystem/FilesystemServiceProvider.php:98
+  PUT       storage/{path} storage.local.upload › vendor/laravel/framework/src/Illuminate/Filesystem/FilesystemServiceProvider.php:106
+  GET|HEAD  up ............................ vendor/laravel/framework/src/Illuminate/Foundation/Configuration/ApplicationBuilder.php:219
+
+                                                                                                                    Showing [11] routes
+

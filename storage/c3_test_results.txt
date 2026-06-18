@@ -1,0 +1,218 @@
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\HttpExplaraXAttendeeRepositoryTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\QrTokenServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Unit\AttendeeSync\SupabaseUpsertServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Unit\Features\SyncBack\CheckinRecordDTOTest::test_all_checkin_methods_accepted(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\AttendeeBatchPayloadPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\AttendeeSyncJobIntegrationTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\BatchPartitionPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\C1ScenariosTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\CheckInFieldsPreservationPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\EventPreparationRecordPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\HmacKeyFormatPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\HmacKeyStabilityPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\PrepareEndpointTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\QrTokenDeterminismPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\SyncIdempotencePropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\AttendeeSync\SyncLogCorrelationPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\BatchPartitionerPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\EventFinderServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\FullSyncIntegrationTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostEventSyncCommandTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostEventSyncLoggerPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostEventSyncOrchestratorPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostEventSyncOrchestratorTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostgresCheckedInAttendeeRepositoryPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostgresCheckedInAttendeeRepositoryTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostgresCheckpointRepositoryPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\PostgresCheckpointRepositoryTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\RetryIntegrationTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\RetryServicePropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\RetryServiceTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\RetrySyncControllerTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\SyncBackDispatcherPropertyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\PostEventSync\SyncBackDispatcherTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackEndpointTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackIdempotencyTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackInvalidTicketsTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for class Tests\Feature\SyncBack\SyncBackLargeBatchTest. Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   PASS  Tests\Feature\PostEventSync\BatchPartitionerPropertyTest
+  ✓ batch partitioner round trip                                         0.19s  
+
+   FAIL  Tests\Feature\PostEventSync\EventFinderServiceTest
+  ⨯ zero eligible events returns empty array                             0.31s  
+  ⨯ returns empty array gracefully with no rows                          0.02s  
+  ⨯ service returns array type                                           0.02s  
+
+   PASS  Tests\Feature\PostEventSync\FullSyncIntegrationTest
+  ✓ full sync completes successfully for small batch                     0.09s  
+  ✓ full sync completes for multi batch event                            0.04s  
+  ✓ zero checkins marks complete without c2 calls                        0.02s  
+  ✓ scheduler downtime recovery processes on next tick                   0.03s  
+
+   FAIL  Tests\Feature\PostEventSync\PostEventSyncCommandTest
+  ✓ exception on event a does not prevent event b                        0.02s  
+  ✓ command always returns exit code 0                                   0.01s  
+  ✓ command exits early when no eligible events                          0.01s  
+  ⨯ command is registered at five minute interval with without overlapp… 0.01s  
+
+Reproduce with:
+ERIS_SEED=1781773369351755 vendor/bin/phpunit --filter 'Tests\\Feature\\PostEventSync\\PostEventSyncLoggerPropertyTest::test_every_log_entry_contains_required_base_fields'
+
+   FAIL  Tests\Feature\PostEventSync\PostEventSyncLoggerPropertyTest
+  ⨯ every log entry contains required base fields                        0.02s  
+PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 bytes) in /home/ayush/Foundership/chekin-informal/tests/Feature/PostEventSync/PostEventSyncOrchestratorPropertyTest.php on line 66
+Stack trace:
+#0 [internal function]: Tests\Feature\PostEventSync\PostEventSyncOrchestratorPropertyTest->{closure:{closure:Tests\Feature\PostEventSync\PostEventSyncOrchestratorPropertyTest::test_failure_stops_subsequent_batch_processing():60}:66}()
+#1 /home/ayush/Foundership/chekin-informal/tests/Feature/PostEventSync/PostEventSyncOrchestratorPropertyTest.php(65): array_map()
+#2 [internal function]: Tests\Feature\PostEventSync\PostEventSyncOrchestratorPropertyTest->{closure:Tests\Feature\PostEventSync\PostEventSyncOrchestratorPropertyTest::test_failure_stops_subsequent_batch_processing():60}()
+#3 /home/ayush/Foundership/chekin-informal/vendor/giorgiosironi/eris/src/Quantifier/Evaluation.php(52): call_user_func_array()
+#4 /home/ayush/Foundership/chekin-informal/vendor/giorgiosironi/eris/src/Quantifier/ForAll.php(171): Eris\Quantifier\Evaluation->execute()
+#5 /home/ayush/Foundership/chekin-informal/vendor/giorgiosironi/eris/src/Quantifier/ForAll.php(194): Eris\Quantifier\ForAll->__invoke()
+#6 /home/ayush/Foundership/chekin-informal/tests/Feature/PostEventSync/PostEventSyncOrchestratorPropertyTest.php(60): Eris\Quantifier\ForAll->then()
+#7 /home/ayush/Foundership/chekin-informal/vendor/phpunit/phpunit/src/Framework/TestCase.php(1667): Tests\Feature\PostEventSync\PostEventSyncOrchestratorPropertyTest->test_failure_stops_subsequent_batch_processing()
+#8 /home/ayush/Foundership/chekin-informal/vendor/phpunit/phpunit/src/Framework/TestCase.php(519): PHPUnit\Framework\TestCase->runTest()
+#9 /home/ayush/Foundership/chekin-informal/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(87): PHPUnit\Framework\TestCase->runBare()
+#10 /home/ayush/Foundership/chekin-informal/vendor/phpunit/phpunit/src/Framework/TestCase.php(365): PHPUnit\Framework\TestRunner->run()
+#11 /home/ayush/Foundership/chekin-informal/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\Framework\TestCase->run()
+#12 /home/ayush/Foundership/chekin-informal/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\Framework\TestSuite->run()
+#13 /home/ayush/Foundership/chekin-informal/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\Framework\TestSuite->run()
+#14 /home/ayush/Foundership/chekin-informal/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#15 /home/ayush/Foundership/chekin-informal/vendor/phpunit/phpunit/src/TextUI/Application.php(211): PHPUnit\TextUI\TestRunner->run()
+#16 /home/ayush/Foundership/chekin-informal/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#17 {main}
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+
+
+In PostEventSyncOrchestratorPropertyTest.php line 66:
+                                                                               
+  Allowed memory size of 134217728 bytes exhausted (tried to allocate 4096 by  
+  tes)                                                                         
+                                                                               
+

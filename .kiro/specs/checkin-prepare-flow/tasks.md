@@ -71,21 +71,21 @@ Implement the full "Prepare Check-in" flow as a self-contained React feature. Th
     - Support `alreadySynced` offset: set `currentSynced = alreadySynced` at initialisation
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8_
 
-  - [-] 3.2 Write property tests for `mockPrepareCheckin` — Properties 6 & 7
+  - [ ] 3.2 Write property tests for `mockPrepareCheckin` — Properties 6 & 7
     - **Property 6: Mock API progress is monotonically increasing and terminates with a success payload**
     - **Validates: Requirements 4.3, 4.4, 4.7**
     - **Property 7: Mock API error fires between 30% and 70% of total when simulateError is true**
     - **Validates: Requirements 4.6**
     - Use `fc.integer({ min: 1, max: 500 })` for `totalAttendees`; collect all emitted payloads and assert monotonicity + terminal status
 
-  - [-] 3.3 Write unit tests for `mockPrepareCheckin`
+  - [ ] 3.3 Write unit tests for `mockPrepareCheckin`
     - Test: cancel function prevents further callbacks after it is called
     - Test: `alreadySynced` offset means first emitted `synced` value is ≥ `alreadySynced`
     - Test: final payload always has `synced === total` on success path
     - _Requirements: 4.3, 4.4, 4.8_
 
 - [ ] 4. Implement feature state hooks
-  - [-] 4.1 Write `src/features/prepare-sync/useSyncState.js`
+  - [ ] 4.1 Write `src/features/prepare-sync/useSyncState.js`
     - `useReducer` with `syncReducer` handling actions: `SYNC_START`, `SYNC_PROGRESS`, `SYNC_SUCCESS`, `SYNC_ERROR`, `SYNC_RETRY`
     - State shape: `{ phases: Record<string, SyncState> }`; each `SyncState` has `phase`, `synced`, `total`, `policy`, `errorSynced`
     - `SYNC_START` → sets `phase: 'syncing'`, resets `synced: 0`, stores `policy` and `total`
@@ -94,7 +94,7 @@ Implement the full "Prepare Check-in" flow as a self-contained React feature. Th
     - Expose: `getSyncState(eventId)`, `startSync`, `handleProgress`, `handleSuccess`, `handleError`, `retrySync`
     - _Requirements: 5.1, 5.2, 5.4, 5.5, 7.1, 7.5, 7.6_
 
-  - [~] 4.2 Write unit tests for `syncReducer`
+  - [ ] 4.2 Write unit tests for `syncReducer`
     - Test all five transitions exhaustively: idle→syncing, syncing→success, syncing→error, error→syncing (retry), success→syncing (resync)
     - Test that `SYNC_ERROR` preserves `errorSynced` and does NOT set `phase: 'success'`
     - Test that unknown `eventId` initialises from `initialSyncState`
@@ -123,7 +123,7 @@ Implement the full "Prepare Check-in" flow as a self-contained React feature. Th
     - Use `aria-describedby` to link the fieldset description to the legend
     - _Requirements: 3.4, 3.5, 3.8_
 
-  - [~] 5.2 Implement `PrepareModal` (`src/features/prepare-sync/PrepareModal.jsx` + `.module.css`)
+  - [ ] 5.2 Implement `PrepareModal` (`src/features/prepare-sync/PrepareModal.jsx` + `.module.css`)
     - Accept props: `event`, `onCancel`, `onConfirm`
     - Local `useState` for `selectedPolicy`, defaulting to `'both'`
     - Render attendee count message: "This will sync [N] attendees to the check-in system."
@@ -132,14 +132,14 @@ Implement the full "Prepare Check-in" flow as a self-contained React feature. Th
     - Call `onConfirm(selectedPolicy)` on Prepare click; call `onCancel` on Cancel click
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9_
 
-  - [~] 5.3 Implement `ResyncModal` (`src/features/prepare-sync/ResyncModal.jsx` + `.module.css`)
+  - [ ] 5.3 Implement `ResyncModal` (`src/features/prepare-sync/ResyncModal.jsx` + `.module.css`)
     - Accept props: `event`, `onCancel`, `onConfirm`
     - No local state; renders via `Modal` shell
     - Display message: "Re-syncing will refresh attendee data with any new tickets sold. Existing check-ins are preserved."
     - Render Cancel (secondary) and "Re-sync" (primary) `Button` pair
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
 
-  - [~] 5.4 Implement `SyncProgressView` (`src/features/prepare-sync/SyncProgressView.jsx` + `.module.css`)
+  - [ ] 5.4 Implement `SyncProgressView` (`src/features/prepare-sync/SyncProgressView.jsx` + `.module.css`)
     - Accept props: `phase` (`syncing | error | success`), `synced`, `total`, `onRetry`
     - Compute `percent = total > 0 ? Math.min(100, Math.round((synced / total) * 100)) : 0`
     - Render `ProgressBar` with `frozen` prop set to `true` when `phase === 'error'`
@@ -149,28 +149,28 @@ Implement the full "Prepare Check-in" flow as a self-contained React feature. Th
     - Apply `--color-success` to success text; `--color-error` to error text
     - _Requirements: 5.2, 5.3, 6.2, 6.3, 7.1, 7.2, 7.3, 7.4, 9.6, 9.7_
 
-  - [~] 5.5 Implement `ActionBar` (`src/features/prepare-sync/ActionBar.jsx` + `.module.css`)
+  - [ ] 5.5 Implement `ActionBar` (`src/features/prepare-sync/ActionBar.jsx` + `.module.css`)
     - Accept props: `eventStatus`, `isSyncingElsewhere` (always `false` per Req 5.6), `onPrepareClick`, `onResyncClick`
     - `not_prepared`: render "Prepare Check-in" primary `Button`
     - `prepared` or `live`: render "Re-sync" secondary `Button` + "Invite Check-in Staff" and "View Live Dashboard" secondary `Button` pair
     - `unknown` / unrecognised: render nothing (no buttons)
     - _Requirements: 2.2, 2.3, 2.4, 2.5, 6.4, 6.5, 6.6_
 
-  - [~] 5.6 Implement `EventCard` (`src/features/prepare-sync/EventCard.jsx` + `.module.css`)
+  - [ ] 5.6 Implement `EventCard` (`src/features/prepare-sync/EventCard.jsx` + `.module.css`)
     - Accept props: `event`, `syncState`, `onPrepareClick`, `onResyncClick`, `onRetryClick`
     - Render `StatusBadge` always
     - When `syncState.phase` is `syncing | error | success`: render `SyncProgressView`; otherwise render `ActionBar`
     - Disable `ActionBar` buttons when `syncState.phase === 'syncing'` via `Button` `disabled` prop
     - _Requirements: 2.1, 2.2, 2.3, 2.5, 5.4, 8.8_
 
-  - [~] 5.7 Implement `EventList` (`src/features/prepare-sync/EventList.jsx`)
+  - [ ] 5.7 Implement `EventList` (`src/features/prepare-sync/EventList.jsx`)
     - Accept props: `events`, `syncStateMap`, `onPrepareClick`, `onResyncClick`, `onRetryClick`
     - Render `<ul role="list">` with one `<li>` / `EventCard` per event; pass through all callbacks
     - No local state
     - _Requirements: 2.1_
 
 - [ ] 6. Wire everything together in `Dashboard` and connect `App`
-  - [~] 6.1 Implement `Dashboard` (`src/features/prepare-sync/Dashboard.jsx`)
+  - [ ] 6.1 Implement `Dashboard` (`src/features/prepare-sync/Dashboard.jsx`)
     - Read `AUTH_FLAG` constant; render `AccessDenied` if `false`
     - Compose `useEventStatus`, `useSyncState`, `useModal` hooks
     - Hold `cancelRefs` with `useRef` for per-event cancel functions
@@ -182,42 +182,42 @@ Implement the full "Prepare Check-in" flow as a self-contained React feature. Th
     - Render `<main>` landmark → `EventList` + conditional `PrepareModal` / `ResyncModal`
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 3.9, 5.1, 5.6, 6.1, 7.5, 8.5, 8.6_
 
-  - [~] 6.2 Wire `Dashboard` into `src/App.jsx` and verify `main.jsx` bootstrapping
+  - [ ] 6.2 Wire `Dashboard` into `src/App.jsx` and verify `main.jsx` bootstrapping
     - `App.jsx` renders `<Dashboard />`
     - `main.jsx` imports `tokens.css` before rendering `<App />`
     - _Requirements: 1.1, 9.1_
 
-- [~] 7. Checkpoint — verify integration smoke test
+- [ ] 7. Checkpoint — verify integration smoke test
   - Ensure the app renders without console errors in development mode
   - Verify Dashboard shows event list from seed data, all status badges display correctly
   - Manually confirm Prepare flow end-to-end: modal opens → confirm → progress updates → success state
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 8. Write unit tests for reusable components
-  - [~] 8.1 Write unit tests for `Button`
+  - [ ] 8.1 Write unit tests for `Button`
     - Test: `disabled` prop renders native `disabled` attribute and `aria-disabled="true"`
     - Test: primary variant applies correct CSS class; secondary variant applies correct CSS class
     - Test: `onClick` is not called when button is disabled
     - _Requirements: 5.4, 9.1, 9.5_
 
-  - [~] 8.2 Write unit tests for `ProgressBar`
+  - [ ] 8.2 Write unit tests for `ProgressBar`
     - Test: `aria-valuenow` matches the `percent` prop for values 0, 50, 100
     - Test: `.frozen` CSS class is applied when `frozen` prop is `true`
     - Test: fill element `width` style reflects `percent`
     - _Requirements: 5.2, 7.1_
 
-  - [~] 8.3 Write unit tests for `StatusBadge`
+  - [ ] 8.3 Write unit tests for `StatusBadge`
     - Test: each of `not_prepared`, `prepared`, `live`, `unknown` renders the correct label text and CSS modifier
     - _Requirements: 2.1, 2.5_
 
-  - [~] 8.4 Write unit tests for `PrepareModal`
+  - [ ] 8.4 Write unit tests for `PrepareModal`
     - Test: default policy is `'both'` on first render
     - Test: "Prepare" button is disabled and explanatory message appears when `totalAttendees === 0`
     - Test: clicking "Prepare" calls `onConfirm` with the currently selected policy
     - Test: clicking "Cancel" calls `onCancel` without calling `onConfirm`
     - _Requirements: 3.3, 3.5, 3.7, 3.9_
 
-  - [~] 8.5 Write unit tests for `SyncProgressView`
+  - [ ] 8.5 Write unit tests for `SyncProgressView`
     - Test: syncing phase renders "Syncing X of Y attendees…" text
     - Test: success phase renders "Sync complete — Y attendees are ready for check-in."
     - Test: error phase with synced > 0 renders "Sync failed — X of Y attendees uploaded. Z attendees could not be synced."
@@ -226,84 +226,84 @@ Implement the full "Prepare Check-in" flow as a self-contained React feature. Th
     - _Requirements: 5.3, 6.2, 7.2, 7.3, 7.4_
 
 - [ ] 9. Write property-based tests (fast-check)
-  - [~] 9.1 Write property test — Property 1: Unknown status renders Status Unknown badge with no action buttons
+  - [ ] 9.1 Write property test — Property 1: Unknown status renders Status Unknown badge with no action buttons
     - Use `fc.string()` filtered to values outside the known status set; render `EventCard` and assert badge text + no action buttons
     - **Validates: Requirements 2.5**
 
-  - [~] 9.2 Write property test — Property 2: Invite and View action buttons always appear as a pair
+  - [ ] 9.2 Write property test — Property 2: Invite and View action buttons always appear as a pair
     - Use `fc.constantFrom('prepared', 'live')` for status; assert both buttons present or both absent together
     - **Validates: Requirements 2.4**
 
-  - [~] 9.3 Write property test — Property 3: PrepareModal attendee count message is accurate for any event
+  - [ ] 9.3 Write property test — Property 3: PrepareModal attendee count message is accurate for any event
     - Use `fc.nat()` for `totalAttendees`; render `PrepareModal` and assert the exact message string
     - **Validates: Requirements 3.2**
 
-  - [~] 9.4 Write property test — Property 4: Policy selection is reflected correctly for any valid policy option
+  - [ ] 9.4 Write property test — Property 4: Policy selection is reflected correctly for any valid policy option
     - Use `fc.constantFrom('mode_a_only', 'mode_b_only', 'both', 'qr_only')`; fire `onChange` and assert radio is checked
     - **Validates: Requirements 3.8**
 
-  - [~] 9.5 Write property test — Property 5: Prepare confirmation passes the selected policy to the sync trigger
+  - [ ] 9.5 Write property test — Property 5: Prepare confirmation passes the selected policy to the sync trigger
     - Use `fc.constantFrom('mode_a_only', 'mode_b_only', 'both', 'qr_only')`; interact with modal and assert `onConfirm` receives that exact value
     - **Validates: Requirements 3.9**
 
-  - [~] 9.6 Write property tests — Properties 6 & 7: Mock API monotonicity and error threshold
+  - [ ] 9.6 Write property tests — Properties 6 & 7: Mock API monotonicity and error threshold
     - Already covered in task 3.2 — cross-reference only; do not duplicate
     - _See task 3.2_
 
-  - [~] 9.7 Write property test — Property 8: Progress percentage stays within [0, 100]
+  - [ ] 9.7 Write property test — Property 8: Progress percentage stays within [0, 100]
     - Use `fc.integer({ min: 1, max: 10000 })` for `total`; use `fc.integer({ min: 0 })` mapped to `synced ≤ total`
     - Assert `Math.min(100, Math.round((synced / total) * 100))` is always in `[0, 100]`
     - **Validates: Requirements 5.2**
 
-  - [~] 9.8 Write property test — Property 9: Status text format for any synced/total values
+  - [ ] 9.8 Write property test — Property 9: Status text format for any synced/total values
     - Use `fc.nat()` for both `synced` and `total`; render `SyncProgressView` in syncing phase and assert exact text format
     - **Validates: Requirements 5.3**
 
-  - [~] 9.9 Write property test — Property 10: Action buttons are disabled during active sync
+  - [ ] 9.9 Write property test — Property 10: Action buttons are disabled during active sync
     - Use `fc.nat()` for event id/totals; render `EventCard` with `syncState.phase === 'syncing'` and assert disabled attribute present on buttons
     - **Validates: Requirements 5.4, 8.8**
 
-  - [~] 9.10 Write property test — Property 11: Buttons re-enabled on sync completion or failure
+  - [ ] 9.10 Write property test — Property 11: Buttons re-enabled on sync completion or failure
     - Use `fc.constantFrom('success', 'error')` for terminal phase; render `EventCard` and assert buttons no longer carry `disabled`
     - **Validates: Requirements 5.5**
 
-  - [~] 9.11 Write property test — Property 12: Sync on one event does not disable buttons on other events
+  - [ ] 9.11 Write property test — Property 12: Sync on one event does not disable buttons on other events
     - Use `fc.string()` for two distinct event IDs; set one to `syncing`, render second `EventCard`, assert buttons enabled
     - **Validates: Requirements 5.6**
 
-  - [~] 9.12 Write property test — Property 13: Success callback transitions event status to prepared
+  - [ ] 9.12 Write property test — Property 13: Success callback transitions event status to prepared
     - Use `fc.constantFrom('not_prepared', 'prepared', 'live', null)` for prior status; trigger success callback via hook and assert `markPrepared` result
     - **Validates: Requirements 6.1**
 
-  - [~] 9.13 Write property test — Property 14: Success message displays correct total attendee count
+  - [ ] 9.13 Write property test — Property 14: Success message displays correct total attendee count
     - Use `fc.integer({ min: 1, max: 50000 })` for `total`; render `SyncProgressView` in success phase and assert the exact count in message
     - **Validates: Requirements 6.2**
 
-  - [~] 9.14 Write property test — Property 15: Error callback freezes progress bar at failure percentage
+  - [ ] 9.14 Write property test — Property 15: Error callback freezes progress bar at failure percentage
     - Use `fc.integer({ min: 1 })` for `synced` ≤ `total`; render `SyncProgressView` in error phase and assert `ProgressBar` `percent` prop equals `Math.round((synced/total)*100)` and `frozen` is `true`
     - **Validates: Requirements 7.1**
 
-  - [~] 9.15 Write property test — Property 16: Error message correctly computes failed count
+  - [ ] 9.15 Write property test — Property 16: Error message correctly computes failed count
     - Use `fc.integer({ min: 1 })` for synced and total; render `SyncProgressView` in error phase and assert `failed = total − synced` appears in the message
     - **Validates: Requirements 7.2**
 
-  - [~] 9.16 Write property test — Property 17: Retry button present whenever phase is error
+  - [ ] 9.16 Write property test — Property 17: Retry button present whenever phase is error
     - Use `fc.nat()` for `synced` and `total`; render `SyncProgressView` in error phase and assert "Retry" button is in the DOM
     - **Validates: Requirements 7.4**
 
-  - [~] 9.17 Write property test — Property 18: Retry resets visual progress to 0% and reuses original policy
+  - [ ] 9.17 Write property test — Property 18: Retry resets visual progress to 0% and reuses original policy
     - Use `fc.constantFrom('mode_a_only', 'mode_b_only', 'both', 'qr_only')`; assert `SYNC_RETRY` reducer action resets `synced` to 0 and stored `policy` is unchanged
     - **Validates: Requirements 7.5**
 
-  - [~] 9.18 Write property test — Property 19: Error callback does not change event status
+  - [ ] 9.18 Write property test — Property 19: Error callback does not change event status
     - Use `fc.constantFrom('not_prepared', 'prepared', 'live')` for prior status; dispatch `SYNC_ERROR` and assert `useEventStatus` state is unchanged
     - **Validates: Requirements 7.6, 8.7**
 
-  - [~] 9.19 Write property test — Property 20: Re-sync passes the same policy as first-time sync
+  - [ ] 9.19 Write property test — Property 20: Re-sync passes the same policy as first-time sync
     - Use `fc.constantFrom('mode_a_only', 'mode_b_only', 'both', 'qr_only')` for original policy; simulate re-sync flow and assert `mockPrepareCheckin` is called with that policy
     - **Validates: Requirements 8.6**
 
-- [~] 10. Final checkpoint — full test suite green
+- [ ] 10. Final checkpoint — full test suite green
   - Run `npx vitest --run` and confirm all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Features\SyncBack\Http\Middleware\VerifySharedSecret;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,6 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'verify.shared.secret' => VerifySharedSecret::class,
         ]);
+    })
+    ->withSchedule(function (Schedule $schedule): void {
+        // C3: Run the post-event sync-back orchestrator every 5 minutes.
+        // withoutOverlapping() ensures only one instance runs at a time.
+        // Requirements: 1.1, 1.4
+        $schedule->command('checkin:post-event-sync')
+            ->everyFiveMinutes()
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -199,7 +199,7 @@ function PrepareSyncModal({ event, totalAttendees = 0, modalType, onClose, onSyn
   const devBypass       = isZeroAttendees && import.meta.env.DEV;
   const prepareDisabled = isSyncing || (isZeroAttendees && !import.meta.env.DEV);
 
-  let title = isPrepare ? 'Prepare Check-in' : 'Re-sync Attendees';
+  let title = isPrepare ? 'Prepare Chek-In' : 'Re-sync Attendees';
   if (isSyncing) title = 'Syncing Attendees…';
   if (isSuccess) title = 'Sync Complete';
   if (isError)   title = 'Sync Failed';

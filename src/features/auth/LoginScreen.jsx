@@ -142,7 +142,7 @@ function LoginScreen() {
 
         {/* ── Footer note ── */}
         <p className="mt-6 text-center text-xs text-slate-400">
-          ExplaraX Check-in Host Dashboard · Slice B1
+          ExplaraX Check-in Host Dashboard
         </p>
       </div>
     </div>

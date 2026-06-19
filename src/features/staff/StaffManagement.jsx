@@ -58,7 +58,7 @@ function StaffManagement({ event, onBack }) {
             ← Back
           </button>
           <div>
-            <h1 className={styles.title}>Check-in Staff</h1>
+            <h1 className={styles.title}>Chek-In Staff</h1>
             <p className={styles.subtitle}>{event.name}</p>
           </div>
         </div>

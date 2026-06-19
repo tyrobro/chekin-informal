@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEventStatus } from './useEventStatus.js';
 import { useModal } from './useModal.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { fetchAttendeeCount } from '../../api/eventApi.js';
-import PrepareSyncModal from './PrepareSyncModal.jsx';
-import StaffManagement from '../staff/StaffManagement.jsx';
-import LiveDashboard   from '../live-dashboard/LiveDashboard.jsx';
+import PrepareSyncModal  from './PrepareSyncModal.jsx';
+import StaffManagement   from '../staff/StaffManagement.jsx';
+import LiveDashboard     from '../live-dashboard/LiveDashboard.jsx';
+import PostEventReport   from '../post-event/PostEventReport.jsx';
 
 const BATCH_SIZE = 3;
 
@@ -38,6 +39,7 @@ function StatusPill({ status }) {
     not_prepared: { label: 'Not Prepared', cls: 'bg-slate-100 text-slate-600 border-slate-200' },
     prepared:     { label: 'Prepared',     cls: 'bg-violet-50 text-violet-700 border-violet-200' },
     live:         { label: 'Live',         cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    completed:    { label: 'Completed',    cls: 'bg-sky-50 text-sky-700 border-sky-200' },
   };
   const cfg = map[status] ?? { label: 'Unknown', cls: 'bg-amber-50 text-amber-700 border-amber-200' };
   return (
@@ -71,6 +73,7 @@ function EventDashboard() {
   const [attendeeCounts, setAttendeeCounts] = useState({});
   const [staffEvent,     setStaffEvent]     = useState(null);
   const [liveEvent,      setLiveEvent]      = useState(null);
+  const [reportEvent,    setReportEvent]    = useState(null);
 
   useEffect(() => {
     if (!events.length || !token) return;
@@ -92,6 +95,21 @@ function EventDashboard() {
   const handlePrepareClick       = useCallback((id) => openPrepareModal(id),   [openPrepareModal]);
   const handleInviteStaffClick   = useCallback((ev) => setStaffEvent(ev),      []);
   const handleLiveDashboardClick = useCallback((ev) => setLiveEvent(ev),       []);
+  const handleViewReportClick    = useCallback((ev) => setReportEvent(ev),     []);
+
+  // ── sub-views ──
+  if (reportEvent) {
+    return (
+      <motion.div
+        className="min-h-screen"
+        style={{ background: '#F5F3FF' }}
+        variants={pageVariants} initial="initial" animate="animate" exit="exit"
+        transition={pageTransition}
+      >
+        <PostEventReport event={reportEvent} onBack={() => setReportEvent(null)} />
+      </motion.div>
+    );
+  }
 
   // ── sub-views ──
   if (liveEvent) {
@@ -224,7 +242,7 @@ function EventDashboard() {
                         bg="#7E57C2" hoverBg="#6A3FB5"
                         icon={<path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />}
                       >
-                        Prepare Check-in
+                        Prepare Chek-In
                       </ActionButton>
                     )}
 
@@ -253,6 +271,17 @@ function EventDashboard() {
                           Live Dashboard
                         </ActionButton>
                       </>
+                    )}
+
+                    {/* ── Completed: sync is done, show report button ── */}
+                    {(event.sync_status === 'complete' || event.status === 'prepared') && (
+                      <ActionButton
+                        onClick={() => handleViewReportClick(event)}
+                        bg="#7E57C2" hoverBg="#6A3FB5"
+                        icon={<path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v1a1 1 0 102 0v-1zm0-4a1 1 0 10-2 0v3a1 1 0 102 0V8zm4-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />}
+                      >
+                        View Report
+                      </ActionButton>
                     )}
                   </div>
                 </motion.li>
@@ -298,7 +327,7 @@ function NavBar({ onLogout }) {
           </div>
           <div>
             <h1 className="text-sm font-bold text-slate-900 leading-none tracking-tight">
-              Check-in Dashboard
+              Chek-In Dashboard
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">ExplaraX Host Portal</p>
           </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import NoSearchResults from './states/NoSearchResults.jsx';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ID document options for Mode B
@@ -55,7 +56,7 @@ function ManualCheckIn({ eventId, gateId, staffName, onClose }) {
     clearCardError(ticketId);
   }, [clearCardError]);
 
-  // ── Search (unchanged logic, 400ms debounce, 2-char minimum) ─────────────
+  // ── Search (400ms debounce, 2-char minimum) ───────────────────────────────
   useEffect(() => {
     if (!searchTerm || searchTerm.length < 2) {
       setResults([]);
@@ -144,7 +145,7 @@ function ManualCheckIn({ eventId, gateId, staffName, onClose }) {
         },
       );
 
-      // 2. INSERT audit log into checkin_events (unchanged)
+      // 2. INSERT audit log into checkin_events (unconditional)
       const insertLogReq = fetch(`${supabaseUrl}/rest/v1/checkin_events`, {
         method: 'POST',
         headers: {
@@ -251,13 +252,9 @@ function ManualCheckIn({ eventId, gateId, staffName, onClose }) {
           <p className="text-red-400 text-sm text-center py-4">{searchError}</p>
         )}
 
-        {/* Empty state */}
+        {/* Empty state — uses reusable NoSearchResults component */}
         {!isSearching && searchTerm.length >= 2 && results.length === 0 && !searchError && (
-          <div className="flex flex-col items-center gap-2 py-10 text-center">
-            <p className="text-slate-400 text-sm">
-              Couldn't find '{searchTerm}'. Try a different spelling, or escalate to the host.
-            </p>
-          </div>
+          <NoSearchResults query={searchTerm} />
         )}
 
         {/* Guest cards */}

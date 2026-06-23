@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import basicSsl from '@vitejs/plugin-basic-ssl'; // <-- 1. Import it here
+import basicSsl from '@vitejs/plugin-basic-ssl';
 
 export default defineConfig({
   plugins: [
     react(),
-    basicSsl(), // <-- 2. Add it to the plugins list
+    basicSsl(),
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
@@ -26,4 +26,14 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    host: true, // Exposes the server to your local Wi-Fi network
+    port: 5173,
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/setupTests.js'],
+    globals: true,
+    css: true,
+  },
 });

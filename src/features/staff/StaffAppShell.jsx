@@ -3,6 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import QRScanner from './QRScanner.jsx';
 import ScanResult from './ScanResult.jsx';
 import ManualCheckIn from './ManualCheckIn.jsx';
+import RevokedLinkState from './states/RevokedLinkState.jsx';
+import ExpiredLinkState from './states/ExpiredLinkState.jsx';
+import NetworkErrorBanner from './states/NetworkErrorBanner.jsx';
+import CameraDeniedState from './states/CameraDeniedState.jsx';
 
 // localStorage key scoped to the invite token so different staff links
 // on the same device each maintain their own setup state.
@@ -158,7 +162,7 @@ function StaffAppShell() {
     if (!isMobile) {
       // It's a desktop. Skip camera, degrade to manual mode instantly.
       completeSetup('desktop');
-      return; 
+      return;
     }
 
     // Request camera permission for mobile devices
@@ -220,47 +224,17 @@ function StaffAppShell() {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // View: Revoked
+  // View: Revoked — delegate to reusable A5 component
   // ─────────────────────────────────────────────────────────────────────────
   if (authStatus === 'revoked') {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-sm w-full text-center">
-          <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-              stroke="#D64545" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" /><path d="M4.93 4.93l14.14 14.14" />
-            </svg>
-          </div>
-          <h2 className="text-lg font-bold text-slate-900 mb-2">Link Revoked</h2>
-          <p className="text-sm text-slate-500 leading-relaxed">
-            This link has been revoked. Please ask the host to send you a new one.
-          </p>
-        </div>
-      </div>
-    );
+    return <RevokedLinkState />;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // View: Expired
+  // View: Expired — delegate to reusable A5 component
   // ─────────────────────────────────────────────────────────────────────────
   if (authStatus === 'expired') {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-sm w-full text-center">
-          <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-5">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-              stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-            </svg>
-          </div>
-          <h2 className="text-lg font-bold text-slate-900 mb-2">Link Expired</h2>
-          <p className="text-sm text-slate-500 leading-relaxed">
-            This link has expired. ExplaraX Check-in links are valid until 24 hours after the event ends.
-          </p>
-        </div>
-      </div>
-    );
+    return <ExpiredLinkState />;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -350,13 +324,18 @@ function StaffAppShell() {
   // ─────────────────────────────────────────────────────────────────────────
   // View: Authenticated + Setup complete — main scanner shell
   //
-  // cameraStatus === 'denied' | 'desktop'  →  hide scanner, show banner + manual CTA
+  // cameraStatus === 'denied' | 'desktop'  →  show CameraDeniedState instead of scanner
   // cameraStatus === 'granted'             →  show QRScanner as normal
   // ─────────────────────────────────────────────────────────────────────────
   const cameraUnavailable = cameraStatus === 'denied' || cameraStatus === 'desktop';
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col relative overflow-hidden">
+
+      {/* Network error banner — non-blocking, sits at top; uses reusable A5 component */}
+      {!isOnline && (
+        <NetworkErrorBanner onDismiss={() => setIsOnline(true)} />
+      )}
 
       {/* Header */}
       <header className="px-6 py-4 border-b border-slate-800 flex justify-between items-center z-10 shrink-0">
@@ -376,22 +355,6 @@ function StaffAppShell() {
       {/* Main content */}
       <main className="flex-1 flex flex-col items-center justify-start p-6 w-full max-w-md mx-auto z-10 overflow-y-auto">
 
-        {/* Offline banner — sticky at top of content area */}
-        {!isOnline && (
-          <div
-            role="alert"
-            className="w-full bg-[#D64545] text-white rounded-xl px-4 py-3 mb-5 flex items-center gap-3 shrink-0"
-          >
-            <svg className="shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="1" y1="1" x2="23" y2="23" />
-              <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
-            </svg>
-            <p className="text-sm font-medium leading-snug">
-              ExplaraX Check-in needs internet right now. Offline mode is coming in the next update.
-            </p>
-          </div>
-        )}
         {showManual ? (
           /* ── Manual Check-In panel ── */
           <div className="w-full h-full">
@@ -403,61 +366,31 @@ function StaffAppShell() {
             />
           </div>
         ) : (
-          /* ── Scanner or camera-denied state ── */
+          /* ── Scanner or camera-unavailable state ── */
           <div className="w-full flex flex-col items-center">
 
             {cameraUnavailable ? (
-              /* Camera denied / no camera — show banner and skip scanner */
-              <div className="w-full">
-                <div className="w-full bg-[#D64545]/10 border border-[#D64545]/30 rounded-2xl px-5 py-5 flex items-start gap-4 mb-6">
-                  {/* Alert icon */}
-                  <div className="shrink-0 w-10 h-10 rounded-full bg-[#D64545]/15 flex items-center justify-center mt-0.5">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                      stroke="#D64545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M12 8v4m0 4h.01" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-[#f87171] font-bold text-sm mb-1">
-                      {cameraStatus === 'desktop' ? 'No Camera Detected' : 'Camera Access Denied'}
-                    </p>
-                    <p className="text-slate-400 text-sm leading-relaxed">
-                      Camera access denied.{' '}
-                      <a
-                        href="#"
-                        className="text-[#c4b5fd] underline underline-offset-2 hover:text-white transition-colors"
-                      >
-                        How to re-enable camera
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
+              /* Reusable A5 component handles its own CTA and copy */
+              <CameraDeniedState onManualCheckIn={() => setShowManual(true)} />
             ) : (
-              /* Camera available — render scanner */
-              <QRScanner onScanSuccess={() => {}} />
-            )}
+              <>
+                <QRScanner onScanSuccess={() => {}} />
 
-            {/* Manual Check-in CTA — always visible, more prominent when camera is unavailable */}
-            <button
-              type="button"
-              onClick={() => setShowManual(true)}
-              className={`w-full font-semibold rounded-2xl transition-all text-base
-                focus:outline-none focus:ring-2 focus:ring-[#7E57C2]/50
-                ${cameraUnavailable
-                  ? 'mt-0 px-8 py-5 bg-[#7E57C2] text-white hover:bg-[#6a48a8] active:scale-[0.97] shadow-lg shadow-[#7E57C2]/25 text-lg font-bold'
-                  : 'mt-8 px-8 py-4 bg-slate-800 text-white border border-slate-700 hover:bg-slate-700 active:scale-95'
-                }`}
-            >
-              {cameraUnavailable ? '→ Manual Check-in' : 'Manual Check-in'}
-            </button>
+                <button
+                  type="button"
+                  onClick={() => setShowManual(true)}
+                  className="mt-8 px-8 py-4 bg-slate-800 text-white font-semibold rounded-2xl border border-slate-700 hover:bg-slate-700 active:scale-95 transition-all w-full text-base focus:outline-none focus:ring-2 focus:ring-[#7E57C2]/50"
+                >
+                  Manual Check-in
+                </button>
+              </>
+            )}
 
           </div>
         )}
       </main>
 
-      {/* Global result overlay */}
+      {/* Global result overlay — always uses real staffData props */}
       <ScanResult
         staffId={staffData?.staffId ?? 'unknown'}
         gateId={staffData?.gateId   ?? 'unknown'}

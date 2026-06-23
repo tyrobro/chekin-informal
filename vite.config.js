@@ -1,26 +1,14 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import laravel from 'laravel-vite-plugin';
-import tailwindcss from '@tailwindcss/vite';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    laravel({
-      input: ['resources/css/app.css', 'resources/js/app.jsx'],
-      refresh: true,
-    }),
-    tailwindcss(),
+    basicSsl()
   ],
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: './src/setupTests.js',
-  },
   server: {
-    watch: {
-      ignored: ['**/storage/framework/views/**'],
-    },
+    host: true, // Exposes the server to your local Wi-Fi network
+    port: 5173,
   },
 });

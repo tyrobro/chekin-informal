@@ -32,13 +32,13 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { createRealtimeClient } from '../../lib/supabaseRealtime.js';
-import { supabaseFetch }        from '../../lib/supabaseClient.js';
+import { createRealtimeClient } from '../../../lib/supabaseRealtime.js';
+import { supabaseFetch }        from '../../../lib/supabaseClient.js';
 import {
   fetchAllAttendees,
   fetchRecentScans,
   fetchArrivalRate,
-} from '../../api/liveDashboardApi.js';
+} from '../../../api/liveDashboardApi.js';
 
 // ── constants ──────────────────────────────────────────────────────────────
 

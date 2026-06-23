@@ -25,8 +25,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { fetchEvents, fetchEventCheckinState } from '../../api/eventApi.js';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { fetchEvents, fetchEventCheckinState } from '../../../api/eventApi.js';
+import { useAuth } from '../../../context/AuthContext.jsx';
 
 export function useEventStatus() {
   const { token } = useAuth();

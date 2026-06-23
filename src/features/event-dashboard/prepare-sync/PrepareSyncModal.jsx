@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import VerificationPolicySelector from './VerificationPolicySelector.jsx';
-import { triggerPrepareSync, fetchSyncStatus } from '../../api/checkinApi.js';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { triggerPrepareSync, fetchSyncStatus } from "../../../api/checkinApi.js";
+import { useAuth } from "../../../context/AuthContext.jsx";
 
 /** How often to poll the status endpoint while a sync is in progress (ms). */
 const POLL_INTERVAL_MS = 2000;

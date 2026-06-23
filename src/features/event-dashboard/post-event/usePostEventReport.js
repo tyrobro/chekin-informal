@@ -22,7 +22,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { fetchReportAttendees, fetchAllScans } from '../../api/reportApi.js';
+import { fetchReportAttendees, fetchAllScans } from '../../../api/reportApi.js';
 
 const BUCKET_MINUTES = 5;
 

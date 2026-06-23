@@ -15,7 +15,7 @@ import {
   inviteStaff,
   revokeStaff,
   resendInvite,
-} from '../../api/staffApi.js';
+} from '../../../api/staffApi.js';
 
 const STAFF_LINK_BASE = 'https://checkin.explarax.com/staff?token=';
 

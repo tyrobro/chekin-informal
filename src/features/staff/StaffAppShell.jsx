@@ -1,26 +1,14 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QRScanner from './QRScanner.jsx';
+import ScanResult from './ScanResult';
+import ManualCheckIn from './ManualCheckIn'; // The new component
 
 function StaffAppShell() {
+  const [showManualEntry, setShowManualEntry] = useState(false);
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const [scanState, setScanState] = useState('idle'); // 'idle', 'success', 'error'
-  const [scanResult, setScanResult] = useState(null);
-
-  const handleScanSuccess = (decodedText) => {
-    setScanResult(decodedText);
-    
-    // Simulate a successful API validation for now
-    setScanState('success');
-
-    // Auto-dismiss the green screen after 3 seconds (per Slice A2 PRD)
-    setTimeout(() => {
-      setScanState('idle');
-      setScanResult(null);
-    }, 1000);
-  };
 
   // 1. Missing Token State (Slice A5)
   if (!token) {
@@ -34,51 +22,36 @@ function StaffAppShell() {
     );
   }
 
-  // 2. Success State (Slice A2 Green Screen)
-  if (scanState === 'success') {
-    return (
-      <div className="min-h-screen bg-[#5BC97C] flex flex-col items-center justify-center p-6 text-white text-center">
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-          <h2 className="text-4xl font-black mb-4 uppercase tracking-wider">Valid Ticket</h2>
-          <p className="text-green-50 mb-8 font-mono text-lg break-all">{scanResult}</p>
-          <p className="text-green-100 text-sm animate-pulse">Ready for next scan in 1s...</p>
-        </motion.div>
-      </div>
-    );
-  }
-
-  // 3. Error State (Slice A2 Red Screen)
-  if (scanState === 'error') {
-    return (
-      <div className="min-h-screen bg-[#D64545] flex flex-col items-center justify-center p-6 text-white text-center">
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-          <h2 className="text-4xl font-black mb-4 uppercase tracking-wider">Invalid Ticket</h2>
-          <p className="text-red-50 mb-8 font-mono break-all">{scanResult}</p>
-          <button 
-            onClick={() => setScanState('idle')}
-            className="px-6 py-2 bg-white/20 rounded-lg font-bold hover:bg-white/30 transition-colors"
-          >
-            Dismiss
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
-  // 4. Active Scanning State (Default)
+  // 2. Active State (Scanner or Manual Entry)
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col">
-      <header className="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col relative overflow-hidden">
+      <header className="px-6 py-4 border-b border-slate-800 flex justify-between items-center z-10">
         <h1 className="text-sm font-bold tracking-wide text-slate-300">ExplaraX Chek-In</h1>
         <span className="px-3 py-1 bg-[#7E57C2]/20 text-[#7E57C2] text-xs font-bold rounded-full border border-[#7E57C2]/30">
           Gate 1
         </span>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center p-6 w-full max-w-md mx-auto">
-        {/* Render Kiro's QR Scanner */}
-        <QRScanner onScanSuccess={handleScanSuccess} />
+      <main className="flex-1 flex flex-col items-center justify-center p-6 w-full max-w-md mx-auto relative z-10">
+        {/* Toggle between Manual Check-In and the Camera */}
+        {showManualEntry ? (
+          <ManualCheckIn onClose={() => setShowManualEntry(false)} />
+        ) : (
+          <div className="w-full flex flex-col items-center">
+            <QRScanner onScanSuccess={() => {}} />
+            
+            <button 
+              onClick={() => setShowManualEntry(true)}
+              className="mt-8 px-8 py-4 bg-slate-800 text-white font-semibold rounded-2xl border border-slate-700 shadow-xl active:scale-95 transition-all w-full text-lg"
+            >
+              Manual Check-in
+            </button>
+          </div>
+        )}
       </main>
+
+      {/* Global Validation Overlay: Listens to both the Camera and the Manual Check-in */}
+      <ScanResult staffId="staff-01" gateId="Gate A" eventId="evt-01" />
     </div>
   );
 }

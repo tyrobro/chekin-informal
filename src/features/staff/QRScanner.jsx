@@ -38,11 +38,21 @@ export default function QRScanner({ onScanSuccess }) {
   const startIdRef = useRef(0); // Teammate's Cancel-Token Pattern
   const isScanningRef = useRef(false);
 
-  const handleScan = useCallback((decodedText) => {
+// Inside QRScanner.jsx, update your handleScan function:
+const handleScan = useCallback((decodedText) => {
+    // 1. Stop if we recently scanned a code (prevents spamming the API)
     if (isScanningRef.current) return;
     isScanningRef.current = true;
-    onScanSuccess(decodedText);
-    setTimeout(() => { isScanningRef.current = false; }, 1500); // Sticky lock deduplication
+
+    // 2. Pass the data to your new ScanResult component
+    if (window.handlePwaScan) {
+      window.handlePwaScan(decodedText);
+    } else if (onScanSuccess) {
+      onScanSuccess(decodedText); // Fallback
+    }
+
+    // 3. Keep the scanner locked for 1.5 seconds before allowing the next scan
+    setTimeout(() => { isScanningRef.current = false; }, 1500);
   }, [onScanSuccess]);
 
   // Main Hardware Initialization

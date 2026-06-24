@@ -16,8 +16,7 @@ import {
   revokeStaff,
   resendInvite,
 } from '../../../api/staffApi.js';
-
-const STAFF_LINK_BASE = 'https://checkin.explarax.com/staff?token=';
+import { buildStaffInviteUrl } from '../../../lib/staffInviteUrl.js';
 
 /** Duration (ms) a toast stays visible */
 const TOAST_DURATION_MS = 3500;
@@ -115,7 +114,7 @@ export function useStaff(eventId, eventEndsAt) {
   // ── copy link ─────────────────────────────────────────────────────────────
 
   const copyLink = useCallback(async (inviteToken) => {
-    const url = `${STAFF_LINK_BASE}${inviteToken}`;
+    const url = buildStaffInviteUrl(inviteToken);
     try {
       await navigator.clipboard.writeText(url);
       showToast('Invite link copied to clipboard');

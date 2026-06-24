@@ -41,7 +41,27 @@ export default function StaffInviteRouter() {
   const [cameraPermission, setCameraPermission] = useState('prompt');
 
   useEffect(() => {
-    // ── 1. Check for existing session ──────────────────────────────────────
+    // ── 1. Fresh invite link takes priority over any cached session ─────────
+    // If a token is in the URL, the user clicked an invite link.
+    // Always validate it — don't let a stale cached session skip onboarding.
+    if (inviteToken) {
+      validateStaffInvite(inviteToken)
+        .then((data) => {
+          const session = createSession(data, inviteToken);
+          setStaffData(session);
+          // New invite always goes through onboarding
+          setView('onboarding');
+        })
+        .catch((err) => {
+          const code = err.code ?? 'invalid_link';
+          if (code === 'revoked')      setView('revoked');
+          else if (code === 'expired') setView('expired');
+          else                         setView('invalid');
+        });
+      return;
+    }
+
+    // ── 2. No token in URL — check for existing session (page reload / revisit)
     const existing = getSession();
     if (existing) {
       setStaffData(existing);
@@ -53,33 +73,10 @@ export default function StaffInviteRouter() {
       return;
     }
 
-    // ── 2. No session — validate invite token ──────────────────────────────
-    if (!inviteToken) {
-      setView('invalid');
-      return;
-    }
-
-    validateStaffInvite(inviteToken)
-      .then((data) => {
-        // Authentication: possession of a valid token is sufficient.
-        // Build and persist the local session immediately.
-        const session = createSession(data, inviteToken);
-        setStaffData(session);
-
-        if (isOnboardingComplete(session.staffId)) {
-          setView('shell');
-        } else {
-          setView('onboarding');
-        }
-      })
-      .catch((err) => {
-        const code = err.code ?? 'invalid_link';
-        if (code === 'revoked')      setView('revoked');
-        else if (code === 'expired') setView('expired');
-        else                         setView('invalid');
-      });
+    // ── 3. No token, no session ─────────────────────────────────────────────
+    setView('invalid');
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once on mount — token is a one-time URL param
+  }, []); // run once on mount
 
   // ── A4 onboarding complete ────────────────────────────────────────────────
   const handleOnboardingComplete = (camPerm) => {

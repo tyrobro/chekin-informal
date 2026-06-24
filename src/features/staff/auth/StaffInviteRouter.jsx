@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { validateStaffInvite } from '../../../services/staffAuthService.js';
+import {
+  validateStaffInvite,
+  createSession,
+  getSession,
+} from '../../../services/staffAuthService.js';
 import { isOnboardingComplete } from '../onboarding/gateSetupStorage.js';
 import RevokedLinkState from '../states/RevokedLinkState.jsx';
 import ExpiredLinkState from '../states/ExpiredLinkState.jsx';
-import StaffCreatePassword from './StaffCreatePassword.jsx';
-import StaffLogin from './StaffLogin.jsx';
 import GateSetupScreen from '../onboarding/GateSetupScreen.jsx';
 import StaffAppShell from '../StaffAppShell.jsx';
 import styles from './StaffAuth.module.css';
@@ -13,34 +15,45 @@ import styles from './StaffAuth.module.css';
 /**
  * StaffInviteRouter — entry point for /staff/invite
  *
- * Flow:
- *  1. Read ?token= from URL
- *  2. Call validate-staff-invite
- *  3. Route to the appropriate screen:
- *     - No token / invalid_link → InvalidLink screen
- *     - revoked               → RevokedLinkState
- *     - expired               → ExpiredLinkState
- *     - valid + firstTime     → StaffCreatePassword
- *     - valid + !firstTime    → StaffLogin
- *  4. After auth success:
- *     - onboarding already complete → StaffAppShell directly
- *     - onboarding not complete     → GateSetupScreen (A4) → StaffAppShell
+ * Passwordless magic-link flow:
+ *
+ *  On every mount:
+ *   1. Check for existing valid local session.
+ *      If found AND onboarding complete → go directly to StaffAppShell.
+ *      If found AND onboarding not complete → go to A4 onboarding.
+ *   2. If no session, read ?token= from URL.
+ *      No token → invalid screen.
+ *   3. Call validate-staff-invite.
+ *      invalid_link → invalid screen
+ *      revoked      → RevokedLinkState
+ *      expired      → ExpiredLinkState
+ *      valid        → createSession() → A4 onboarding → StaffAppShell
  */
 export default function StaffInviteRouter() {
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('token');
 
   /**
-   * view: 'loading' | 'invalid' | 'revoked' | 'expired' |
-   *       'create_password' | 'login' | 'onboarding' | 'shell'
+   * view: 'loading' | 'invalid' | 'revoked' | 'expired' | 'onboarding' | 'shell'
    */
   const [view,       setView]       = useState('loading');
-  const [inviteData, setInviteData] = useState(null);
-  const [session,    setSession]    = useState(null);
-  // Camera permission resolved during A4 onboarding, passed into StaffAppShell
+  const [staffData,  setStaffData]  = useState(null); // current session / invite data
   const [cameraPermission, setCameraPermission] = useState('prompt');
 
   useEffect(() => {
+    // ── 1. Check for existing session ──────────────────────────────────────
+    const existing = getSession();
+    if (existing) {
+      setStaffData(existing);
+      if (isOnboardingComplete(existing.staffId)) {
+        setView('shell');
+      } else {
+        setView('onboarding');
+      }
+      return;
+    }
+
+    // ── 2. No session — validate invite token ──────────────────────────────
     if (!inviteToken) {
       setView('invalid');
       return;
@@ -48,8 +61,16 @@ export default function StaffInviteRouter() {
 
     validateStaffInvite(inviteToken)
       .then((data) => {
-        setInviteData(data);
-        setView(data.firstTime ? 'create_password' : 'login');
+        // Authentication: possession of a valid token is sufficient.
+        // Build and persist the local session immediately.
+        const session = createSession(data, inviteToken);
+        setStaffData(session);
+
+        if (isOnboardingComplete(session.staffId)) {
+          setView('shell');
+        } else {
+          setView('onboarding');
+        }
       })
       .catch((err) => {
         const code = err.code ?? 'invalid_link';
@@ -57,18 +78,8 @@ export default function StaffInviteRouter() {
         else if (code === 'expired') setView('expired');
         else                         setView('invalid');
       });
-  }, [inviteToken]);
-
-  // ── Auth success: decide whether to show A4 onboarding ───────────────────
-  const handleAuthSuccess = (sess) => {
-    setSession(sess);
-    const staffId = inviteData?.staffId ?? sess?.user?.id;
-    if (staffId && isOnboardingComplete(staffId)) {
-      setView('shell');
-    } else {
-      setView('onboarding');
-    }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount — token is a one-time URL param
 
   // ── A4 onboarding complete ────────────────────────────────────────────────
   const handleOnboardingComplete = (camPerm) => {
@@ -106,44 +117,22 @@ export default function StaffInviteRouter() {
   if (view === 'revoked') return <RevokedLinkState />;
   if (view === 'expired') return <ExpiredLinkState />;
 
-  if (view === 'create_password' && inviteData) {
-    return (
-      <StaffCreatePassword
-        email={inviteData.email}
-        name={inviteData.name}
-        gate={inviteData.gate}
-        eventName={inviteData.eventName}
-        staffId={inviteData.staffId}
-        onSuccess={handleAuthSuccess}
-      />
-    );
-  }
-
-  if (view === 'login' && inviteData) {
-    return (
-      <StaffLogin
-        email={inviteData.email}
-        onSuccess={handleAuthSuccess}
-      />
-    );
-  }
-
-  if (view === 'onboarding' && inviteData) {
+  if (view === 'onboarding' && staffData) {
     return (
       <GateSetupScreen
-        staffId={inviteData.staffId}
-        name={inviteData.name}
-        eventName={inviteData.eventName}
-        gate={inviteData.gate}
+        staffId={staffData.staffId}
+        name={staffData.staffName}
+        eventName={staffData.eventName}
+        gate={staffData.gate}
         onComplete={handleOnboardingComplete}
       />
     );
   }
 
-  if (view === 'shell') {
+  if (view === 'shell' && staffData) {
     return (
       <StaffAppShell
-        session={session}
+        session={staffData}
         initialCameraPermission={cameraPermission}
       />
     );

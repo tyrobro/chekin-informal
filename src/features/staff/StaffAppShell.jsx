@@ -48,11 +48,10 @@ function StaffAppShell({ session: sessionProp = null, initialCameraPermission = 
       setSessionChecked(true);
       return;
     }
-    // Legacy dev route: check stored session, but don't block if absent.
-    getSession().then((sess) => {
-      setActiveSession(sess);
-      setSessionChecked(true);
-    });
+    // Legacy dev route: check stored session synchronously
+    const sess = getSession();
+    setActiveSession(sess);
+    setSessionChecked(true);
   }, [sessionProp]);
 
   // ── Auth ──────────────────────────────────────────────────────────────────

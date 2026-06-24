@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { validateStaffInvite } from '../../../services/staffAuthService.js';
+import { isOnboardingComplete } from '../onboarding/gateSetupStorage.js';
 import RevokedLinkState from '../states/RevokedLinkState.jsx';
 import ExpiredLinkState from '../states/ExpiredLinkState.jsx';
 import StaffCreatePassword from './StaffCreatePassword.jsx';
 import StaffLogin from './StaffLogin.jsx';
+import GateSetupScreen from '../onboarding/GateSetupScreen.jsx';
 import StaffAppShell from '../StaffAppShell.jsx';
 import styles from './StaffAuth.module.css';
 
@@ -20,18 +22,23 @@ import styles from './StaffAuth.module.css';
  *     - expired               → ExpiredLinkState
  *     - valid + firstTime     → StaffCreatePassword
  *     - valid + !firstTime    → StaffLogin
- *     - authenticated session → StaffAppShell
+ *  4. After auth success:
+ *     - onboarding already complete → StaffAppShell directly
+ *     - onboarding not complete     → GateSetupScreen (A4) → StaffAppShell
  */
 export default function StaffInviteRouter() {
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('token');
 
   /**
-   * view: 'loading' | 'invalid' | 'revoked' | 'expired' | 'create_password' | 'login' | 'shell'
+   * view: 'loading' | 'invalid' | 'revoked' | 'expired' |
+   *       'create_password' | 'login' | 'onboarding' | 'shell'
    */
   const [view,       setView]       = useState('loading');
-  const [inviteData, setInviteData] = useState(null); // validated invite payload
-  const [session,    setSession]    = useState(null);  // authenticated session
+  const [inviteData, setInviteData] = useState(null);
+  const [session,    setSession]    = useState(null);
+  // Camera permission resolved during A4 onboarding, passed into StaffAppShell
+  const [cameraPermission, setCameraPermission] = useState('prompt');
 
   useEffect(() => {
     if (!inviteToken) {
@@ -46,15 +53,26 @@ export default function StaffInviteRouter() {
       })
       .catch((err) => {
         const code = err.code ?? 'invalid_link';
-        if (code === 'revoked')   setView('revoked');
+        if (code === 'revoked')      setView('revoked');
         else if (code === 'expired') setView('expired');
-        else                      setView('invalid');
+        else                         setView('invalid');
       });
   }, [inviteToken]);
 
-  // ── Auth success → go to shell ────────────────────────────────────────────
+  // ── Auth success: decide whether to show A4 onboarding ───────────────────
   const handleAuthSuccess = (sess) => {
     setSession(sess);
+    const staffId = inviteData?.staffId ?? sess?.user?.id;
+    if (staffId && isOnboardingComplete(staffId)) {
+      setView('shell');
+    } else {
+      setView('onboarding');
+    }
+  };
+
+  // ── A4 onboarding complete ────────────────────────────────────────────────
+  const handleOnboardingComplete = (camPerm) => {
+    setCameraPermission(camPerm);
     setView('shell');
   };
 
@@ -85,13 +103,8 @@ export default function StaffInviteRouter() {
     );
   }
 
-  if (view === 'revoked') {
-    return <RevokedLinkState />;
-  }
-
-  if (view === 'expired') {
-    return <ExpiredLinkState />;
-  }
+  if (view === 'revoked') return <RevokedLinkState />;
+  if (view === 'expired') return <ExpiredLinkState />;
 
   if (view === 'create_password' && inviteData) {
     return (
@@ -115,11 +128,26 @@ export default function StaffInviteRouter() {
     );
   }
 
-  if (view === 'shell') {
-    // Pass session down to StaffAppShell via URL-free props
-    return <StaffAppShell session={session} />;
+  if (view === 'onboarding' && inviteData) {
+    return (
+      <GateSetupScreen
+        staffId={inviteData.staffId}
+        name={inviteData.name}
+        eventName={inviteData.eventName}
+        gate={inviteData.gate}
+        onComplete={handleOnboardingComplete}
+      />
+    );
   }
 
-  // Should never reach here — safety fallback
+  if (view === 'shell') {
+    return (
+      <StaffAppShell
+        session={session}
+        initialCameraPermission={cameraPermission}
+      />
+    );
+  }
+
   return null;
 }

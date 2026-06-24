@@ -20,6 +20,9 @@ const setupKey = (token) => `explarax_setup_${token}`;
 //   session — { access_token, user } (optional)
 //     When provided (from StaffInviteRouter after auth), used directly.
 //     When absent (legacy /staff?token=... dev route), falls back to URL param check.
+//   initialCameraPermission — 'prompt' | 'granted' | 'denied' (optional)
+//     When provided by A4 onboarding router, seeds the camera status so the
+//     setup screen can be skipped if permission was already resolved upstream.
 //
 // State machine:
 //   authStatus:   'loading' | 'authenticated' | 'unauthorized' | 'missing_token'
@@ -27,7 +30,7 @@ const setupKey = (token) => `explarax_setup_${token}`;
 //   setupStatus:  'pending' | 'requesting' | 'complete'
 //   cameraStatus: 'pending' | 'granted' | 'denied' | 'desktop'
 // ─────────────────────────────────────────────────────────────────────────────
-function StaffAppShell({ session: sessionProp = null }) {
+function StaffAppShell({ session: sessionProp = null, initialCameraPermission = 'prompt' }) {
   const [searchParams] = useSearchParams();
   const urlToken = searchParams.get('token');
   const status   = searchParams.get('status'); // 'revoked' | 'expired' for demo/routing
@@ -57,9 +60,15 @@ function StaffAppShell({ session: sessionProp = null }) {
   const [staffData,  setStaffData]  = useState(null); // { staffId, eventId, gateId, name }
 
   // ── Onboarding (Slice A4) ─────────────────────────────────────────────────
-  const [setupStatus,    setSetupStatus]    = useState('pending');  // pending | requesting | complete
-  const [cameraStatus,   setCameraStatus]   = useState('pending');  // pending | granted | denied | desktop
-  const [deferredPrompt, setDeferredPrompt] = useState(null);       // BeforeInstallPromptEvent
+  // If initialCameraPermission was provided by an upstream router (e.g., A4's
+  // onboarding resolved camera permission before mounting this shell), seed
+  // cameraStatus and skip the setup screen.
+  const alreadyOnboarded = initialCameraPermission !== 'prompt';
+  const [setupStatus,    setSetupStatus]    = useState(alreadyOnboarded ? 'complete' : 'pending');
+  const [cameraStatus,   setCameraStatus]   = useState(
+    alreadyOnboarded ? initialCameraPermission : 'pending',
+  );
+  const [deferredPrompt, setDeferredPrompt] = useState(null); // BeforeInstallPromptEvent
 
   // ── Scanner / Manual toggle ────────────────────────────────────────────────
   const [showManual, setShowManual] = useState(false);
@@ -142,23 +151,26 @@ function StaffAppShell({ session: sessionProp = null }) {
         setStaffData({ staffId: row.id, eventId: row.event_id, gateId: row.gate, name: row.name });
         setAuthStatus('authenticated');
 
-        // Check if this token has already completed onboarding
-        try {
-          const saved = localStorage.getItem(setupKey(urlToken));
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            setCameraStatus(parsed.cameraStatus ?? 'granted');
-            setSetupStatus('complete');
+        // Check if this token has already completed onboarding (only if not
+        // already seeded from initialCameraPermission prop)
+        if (!alreadyOnboarded) {
+          try {
+            const saved = localStorage.getItem(setupKey(urlToken));
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              setCameraStatus(parsed.cameraStatus ?? 'granted');
+              setSetupStatus('complete');
+            }
+          } catch {
+            // Corrupted localStorage — treat as first-launch
           }
-        } catch {
-          // Corrupted localStorage — treat as first-launch
         }
       })
       .catch((err) => {
         console.error('StaffAppShell: token validation failed —', err);
         setAuthStatus('unauthorized');
       });
-  }, [urlToken]);
+  }, [urlToken, alreadyOnboarded]);
 
   // ── completeSetup — persists state and marks onboarding done ─────────────
   const completeSetup = useCallback((camStatus) => {

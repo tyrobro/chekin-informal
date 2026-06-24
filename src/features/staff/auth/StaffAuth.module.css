@@ -1,0 +1,280 @@
+/* ── StaffAuth.module.css ────────────────────────────────────────────────────
+   Shared styles for StaffLogin, StaffCreatePassword, and StaffInviteRouter.
+   Follows the existing ExplaraX dark-UI design system (slate-900 bg, purple accent).
+────────────────────────────────────────────────────────────────────────────── */
+
+/* Full-screen container */
+.screen {
+  min-height: 100svh; /* svh = small viewport height — PWA safe */
+  background: #0f172a; /* slate-900 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+/* Auth card */
+.card {
+  width: 100%;
+  max-width: 400px;
+  background: #1e293b; /* slate-800 */
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  padding: 36px 28px 32px;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* Logo mark */
+.logoWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7E57C2, #9575CD);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+  select: none;
+}
+
+/* Headings */
+.title {
+  margin: 0 0 6px;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f1f5f9; /* slate-100 */
+  line-height: 1.3;
+}
+
+.subtitle {
+  margin: 0 0 24px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #64748b; /* slate-500 */
+  line-height: 1.5;
+}
+
+/* Context card (event/gate info on first-time setup) */
+.contextCard {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contextLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+
+.contextLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569; /* slate-600 */
+  flex-shrink: 0;
+}
+
+.contextValue {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #cbd5e1; /* slate-300 */
+  text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #94a3b8; /* slate-400 */
+  letter-spacing: 0.01em;
+}
+
+.input {
+  background: #0f172a;
+  border: 1px solid #334155; /* slate-700 */
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.9375rem;
+  color: #f1f5f9;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 80ms ease;
+  outline: none;
+  font-family: inherit;
+}
+
+.input::placeholder {
+  color: #475569;
+}
+
+.input:focus {
+  border-color: #7E57C2;
+}
+
+.input:focus-visible {
+  outline: 2px solid #9575CD;
+  outline-offset: 1px;
+}
+
+.inputReadOnly {
+  color: #64748b;
+  cursor: default;
+}
+
+.inputReadOnly:focus {
+  border-color: #334155; /* no highlight on read-only */
+}
+
+.inputError {
+  border-color: #D64545;
+}
+
+/* Field-level validation hints */
+.fieldHint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #f87171; /* red-400 */
+  line-height: 1.4;
+}
+
+/* Server error */
+.error {
+  margin: 0;
+  padding: 10px 14px;
+  background: rgba(214, 69, 69, 0.12);
+  border: 1px solid rgba(214, 69, 69, 0.3);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #fca5a5; /* red-300 */
+  line-height: 1.5;
+}
+
+/* Submit button */
+.submitButton {
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #7E57C2;
+  color: #ffffff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background 80ms ease, transform 80ms ease;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #6A3FB5;
+}
+
+.submitButton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.submitButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.submitButton:focus-visible {
+  outline: 2px solid #9575CD;
+  outline-offset: 2px;
+}
+
+/* Spinner */
+.spinnerRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  animation: spin 0.75s linear infinite;
+}
+
+.spinnerTrack {
+  opacity: 0.25;
+}
+
+.spinnerFill {
+  opacity: 0.8;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Loading screen (used by StaffInviteRouter) ── */
+.loadingScreen {
+  min-height: 100svh;
+  background: #0f172a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  animation: spin 0.75s linear infinite;
+  color: #7E57C2;
+}
+
+.loadingText {
+  font-size: 0.9375rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Mobile tweaks ── */
+@media (max-width: 400px) {
+  .card {
+    padding: 28px 20px 24px;
+    border-radius: 16px;
+  }
+}

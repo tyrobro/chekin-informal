@@ -7,6 +7,7 @@ import RevokedLinkState from './states/RevokedLinkState.jsx';
 import ExpiredLinkState from './states/ExpiredLinkState.jsx';
 import NetworkErrorBanner from './states/NetworkErrorBanner.jsx';
 import CameraDeniedState from './states/CameraDeniedState.jsx';
+import { getSession } from '../../services/staffAuthService.js';
 
 // localStorage key scoped to the invite token so different staff links
 // on the same device each maintain their own setup state.
@@ -15,24 +16,50 @@ const setupKey = (token) => `explarax_setup_${token}`;
 // ─────────────────────────────────────────────────────────────────────────────
 // StaffAppShell
 //
+// Props:
+//   session — { access_token, user } (optional)
+//     When provided (from StaffInviteRouter after auth), used directly.
+//     When absent (legacy /staff?token=... dev route), falls back to URL param check.
+//
 // State machine:
 //   authStatus:   'loading' | 'authenticated' | 'unauthorized' | 'missing_token'
 //                 | 'revoked' | 'expired'
 //   setupStatus:  'pending' | 'requesting' | 'complete'
 //   cameraStatus: 'pending' | 'granted' | 'denied' | 'desktop'
 // ─────────────────────────────────────────────────────────────────────────────
-function StaffAppShell() {
+function StaffAppShell({ session: sessionProp = null }) {
   const [searchParams] = useSearchParams();
-  const urlToken       = searchParams.get('token');
+  const urlToken = searchParams.get('token');
+  const status   = searchParams.get('status'); // 'revoked' | 'expired' for demo/routing
+
+  // ── Session (magic-link invite flow) ─────────────────────────────────────
+  // sessionChecked gates the rest of the UI. When sessionProp is provided
+  // (from StaffInviteRouter), it's already checked. When absent (legacy dev
+  // route), we call getSession() once and proceed regardless of result.
+  const [sessionChecked, setSessionChecked] = useState(sessionProp !== null);
+  const [activeSession,  setActiveSession]  = useState(sessionProp);
+
+  useEffect(() => {
+    if (sessionProp !== null) {
+      setActiveSession(sessionProp);
+      setSessionChecked(true);
+      return;
+    }
+    // Legacy dev route: check stored session, but don't block if absent.
+    getSession().then((sess) => {
+      setActiveSession(sess);
+      setSessionChecked(true);
+    });
+  }, [sessionProp]);
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   const [authStatus, setAuthStatus] = useState('loading');
   const [staffData,  setStaffData]  = useState(null); // { staffId, eventId, gateId, name }
 
   // ── Onboarding (Slice A4) ─────────────────────────────────────────────────
-  const [setupStatus,  setSetupStatus]  = useState('pending');  // pending | requesting | complete
-  const [cameraStatus, setCameraStatus] = useState('pending');  // pending | granted | denied | desktop
-  const [deferredPrompt, setDeferredPrompt] = useState(null);   // BeforeInstallPromptEvent
+  const [setupStatus,    setSetupStatus]    = useState('pending');  // pending | requesting | complete
+  const [cameraStatus,   setCameraStatus]   = useState('pending');  // pending | granted | denied | desktop
+  const [deferredPrompt, setDeferredPrompt] = useState(null);       // BeforeInstallPromptEvent
 
   // ── Scanner / Manual toggle ────────────────────────────────────────────────
   const [showManual, setShowManual] = useState(false);
@@ -184,7 +211,30 @@ function StaffAppShell() {
   }, [deferredPrompt, completeSetup]);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // View: Loading (auth check in progress)
+  // View: Session loading (invite flow — waiting for getSession())
+  // ─────────────────────────────────────────────────────────────────────────
+  if (!sessionChecked) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <svg className="animate-spin w-8 h-8 text-[#7E57C2]" viewBox="0 0 24 24" fill="none" aria-label="Loading">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3.5" opacity="0.25" />
+          <path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" opacity="0.8" />
+        </svg>
+      </div>
+    );
+  }
+
+  // ── Demo/routing shortcut: ?status=revoked|expired in the URL ────────────
+  // Allows QA and the invite router to trigger error states without a DB call.
+  if (status === 'revoked' || (urlToken && urlToken === 'revoked')) {
+    return <RevokedLinkState />;
+  }
+  if (status === 'expired' || (urlToken && urlToken === 'expired')) {
+    return <ExpiredLinkState />;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // View: Auth check in progress (token being validated against Supabase)
   // ─────────────────────────────────────────────────────────────────────────
   if (authStatus === 'loading') {
     return (

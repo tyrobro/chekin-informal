@@ -94,3 +94,30 @@ Error states:
 * Offer recovery path
 
 The user should never be left wondering what to do next.
+
+## Staff Authentication Model
+
+Staff access requires both:
+
+1. A valid invitation link
+2. Valid staff credentials
+
+Flow:
+
+Invitation Email
+→ Magic Link
+→ Staff Login
+→ Staff Session
+→ Staff PWA
+
+Invitation links alone do not grant access.
+
+Invitation links are used only to identify the staff assignment and verify invitation validity.
+
+Authentication is performed using email and password.
+
+Goals:
+
+- Prevent unauthorized access if invitation links are shared
+- Support password-protected staff access
+- Maintain gate-level assignment security

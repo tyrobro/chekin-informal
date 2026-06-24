@@ -112,3 +112,36 @@ New functionality must include:
 * Edge case verification
 
 No feature is complete without testing.
+
+## Staff Authentication Architecture
+
+Invitation Validation Layer
+
+- invite_token stored in staff table
+- revoked flag enforced
+- expires_at enforced
+- token_used_at tracked
+
+Authentication Layer
+
+- Staff enters email and password
+- Credentials validated against staff record
+- Successful authentication creates staff session
+
+Session Rules
+
+- Session stored in browser
+- Staff session required for all /staff routes
+- Invalid session redirects to login
+
+Authorization Rules
+
+- Staff may only access their assigned gate
+- Revoked invitations denied
+- Expired invitations denied
+
+Security Requirements
+
+- Never expose invite tokens after validation
+- Never store plaintext passwords
+- Never bypass invitation validation

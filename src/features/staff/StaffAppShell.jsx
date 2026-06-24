@@ -68,7 +68,7 @@ function StaffAppShell() {
         setStaffData({
           staffId: row.id,
           eventId: row.event_id,
-          gateId:  row.gate_id,
+          gateId:  row.gate,
           name:    row.name,
         });
         setAuthStatus('authenticated');
@@ -145,6 +145,8 @@ function StaffAppShell() {
           <div className="w-full h-full">
             <ManualCheckIn
               eventId={staffData?.eventId}
+              gateId={staffData?.gateId}
+              staffName={staffData?.name}
               onClose={() => setShowManual(false)}
             />
           </div>

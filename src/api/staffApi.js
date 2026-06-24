@@ -16,6 +16,42 @@
 
 import { supabaseFetch } from '../lib/supabaseClient.js';
 
+// Edge Function base URL — same origin as the REST API, different path prefix.
+const SUPABASE_URL     = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, '');
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+/**
+ * Invoke a Supabase Edge Function by name.
+ * Failures are non-fatal — the caller decides whether to surface them.
+ *
+ * @param {string} fnName     — function slug (e.g. 'send-staff-invite')
+ * @param {object} payload    — JSON-serialisable body
+ * @returns {Promise<object>} — parsed response body
+ * @throws {Error}            — on network failure or non-2xx response
+ */
+async function invokeEdgeFunction(fnName, payload) {
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+    method:  'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey:         SUPABASE_ANON_KEY,
+      Authorization:  `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+
+  if (!res.ok) {
+    throw new Error(
+      data?.error ?? `Edge function '${fnName}' returned HTTP ${res.status}`,
+    );
+  }
+
+  return data;
+}
+
 const TABLE = '/rest/v1/checkin_staff';
 
 /**
@@ -71,7 +107,24 @@ export async function inviteStaff({ eventId, name, email, gate, eventEndsAt }) {
   });
 
   // supabaseFetch returns an array when Prefer: return=representation is set
-  return Array.isArray(rows) ? rows[0] : rows;
+  const newMember = Array.isArray(rows) ? rows[0] : rows;
+
+  // ── Trigger invite email (fire-and-forget) ──────────────────────────────
+  // A delivery hiccup must never prevent the staff member from being added.
+  // Errors are logged as warnings so the host can follow up manually.
+  invokeEdgeFunction('send-staff-invite', {
+    name:        name.trim(),
+    email:       email.trim().toLowerCase(),
+    gate:        gate.trim(),
+    inviteToken: inviteToken,
+  }).catch((err) => {
+    console.warn(
+      '[inviteStaff] Email invite could not be sent — staff member was still created.',
+      err?.message ?? err,
+    );
+  });
+
+  return newMember;
 }
 
 /**

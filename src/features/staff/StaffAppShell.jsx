@@ -1,29 +1,64 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import QRScanner from './QRScanner.jsx';
 import ScanResult from './ScanResult.jsx';
 import ManualCheckIn from './ManualCheckIn.jsx';
 
+// localStorage key scoped to the invite token so different staff links
+// on the same device each maintain their own setup state.
+const setupKey = (token) => `explarax_setup_${token}`;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // StaffAppShell
 //
-// Authentication flow:
-//   1. Extract ?token= from the URL.
-//   2. If absent → 'missing_token'.
-//   3. Fetch checkin_staff from Supabase REST API filtered by invite_token.
-//   4. Empty result / network error → 'unauthorized'.
-//   5. Valid row → populate staffData, set 'authenticated'.
+// State machine:
+//   authStatus:   'loading' | 'authenticated' | 'unauthorized' | 'missing_token'
+//                 | 'revoked' | 'expired'
+//   setupStatus:  'pending' | 'requesting' | 'complete'
+//   cameraStatus: 'pending' | 'granted' | 'denied' | 'desktop'
 // ─────────────────────────────────────────────────────────────────────────────
 function StaffAppShell() {
-  const [searchParams]   = useSearchParams();
-  const urlToken         = searchParams.get('token');
+  const [searchParams] = useSearchParams();
+  const urlToken       = searchParams.get('token');
 
+  // ── Auth ──────────────────────────────────────────────────────────────────
   const [authStatus, setAuthStatus] = useState('loading');
-  // { staffId, eventId, gateId, name }
-  const [staffData, setStaffData]   = useState(null);
+  const [staffData,  setStaffData]  = useState(null); // { staffId, eventId, gateId, name }
+
+  // ── Onboarding (Slice A4) ─────────────────────────────────────────────────
+  const [setupStatus,  setSetupStatus]  = useState('pending');  // pending | requesting | complete
+  const [cameraStatus, setCameraStatus] = useState('pending');  // pending | granted | denied | desktop
+  const [deferredPrompt, setDeferredPrompt] = useState(null);   // BeforeInstallPromptEvent
+
+  // ── Scanner / Manual toggle ────────────────────────────────────────────────
   const [showManual, setShowManual] = useState(false);
 
-  // ── Token validation ──────────────────────────────────────────────────
+  // ── Network connectivity ───────────────────────────────────────────────────
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+
+  // ── Online/offline listeners ───────────────────────────────────────────────
+  useEffect(() => {
+    const goOnline  = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener('online',  goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online',  goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
+
+  // ── PWA install prompt capture ─────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault(); // stop Chrome mini-infobar
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  // ── Token validation + localStorage setup-state rehydration ──────────────
   useEffect(() => {
     if (!urlToken) {
       setAuthStatus('missing_token');
@@ -33,25 +68,22 @@ function StaffAppShell() {
     const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    // Guard: if env vars are not configured, fail gracefully
     if (!supabaseUrl || !supabaseAnon) {
       console.error('StaffAppShell: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is not set.');
       setAuthStatus('unauthorized');
       return;
     }
 
-    // THE FIX: Changed ?token= to ?invite_token=
     const endpoint =
       `${supabaseUrl}/rest/v1/checkin_staff` +
       `?invite_token=eq.${encodeURIComponent(urlToken)}` +
-      `&select=id,event_id,gate,name` + // <-- CHANGED HERE
+      `&select=id,event_id,gate,name,revoked,expires_at` +
       `&limit=1`;
 
     fetch(endpoint, {
-      method: 'GET',
       headers: {
-        'apikey':        supabaseAnon,
-        'Authorization': `Bearer ${supabaseAnon}`,
+        apikey:          supabaseAnon,
+        Authorization:   `Bearer ${supabaseAnon}`,
         'Content-Type':  'application/json',
       },
     })
@@ -65,13 +97,31 @@ function StaffAppShell() {
           return;
         }
         const row = rows[0];
-        setStaffData({
-          staffId: row.id,
-          eventId: row.event_id,
-          gateId:  row.gate,
-          name:    row.name,
-        });
+
+        // Specific failure reasons — checked before granting access
+        if (row.revoked === true) {
+          setAuthStatus('revoked');
+          return;
+        }
+        if (row.expires_at && new Date(row.expires_at) < new Date()) {
+          setAuthStatus('expired');
+          return;
+        }
+
+        setStaffData({ staffId: row.id, eventId: row.event_id, gateId: row.gate, name: row.name });
         setAuthStatus('authenticated');
+
+        // Check if this token has already completed onboarding
+        try {
+          const saved = localStorage.getItem(setupKey(urlToken));
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setCameraStatus(parsed.cameraStatus ?? 'granted');
+            setSetupStatus('complete');
+          }
+        } catch {
+          // Corrupted localStorage — treat as first-launch
+        }
       })
       .catch((err) => {
         console.error('StaffAppShell: token validation failed —', err);
@@ -79,7 +129,59 @@ function StaffAppShell() {
       });
   }, [urlToken]);
 
-  // ── Loading ───────────────────────────────────────────────────────────
+  // ── completeSetup — persists state and marks onboarding done ─────────────
+  const completeSetup = useCallback((camStatus) => {
+    setCameraStatus(camStatus);
+    setSetupStatus('complete');
+    try {
+      localStorage.setItem(setupKey(urlToken), JSON.stringify({ cameraStatus: camStatus }));
+    } catch {
+      // Private browsing / storage quota — non-fatal; setup just runs again next time
+    }
+  }, [urlToken]);
+
+  // ── handleContinue — camera permission request + optional PWA install ─────
+  const handleContinue = useCallback(async () => {
+    setSetupStatus('requesting');
+
+    // Trigger PWA Add-to-Home-Screen prompt if the browser surfaced one
+    if (deferredPrompt) {
+      try {
+        await deferredPrompt.prompt();
+      } catch { /* install prompt may only be called once */ }
+      setDeferredPrompt(null);
+    }
+
+    // Strict Desktop vs Mobile Detection
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    if (!isMobile) {
+      // It's a desktop. Skip camera, degrade to manual mode instantly.
+      completeSetup('desktop');
+      return; 
+    }
+
+    // Request camera permission for mobile devices
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+      });
+      // Immediately release — we only needed the permission grant
+      stream.getTracks().forEach((t) => t.stop());
+      completeSetup('granted');
+    } catch (err) {
+      const name = err?.name ?? '';
+      if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        completeSetup('desktop');
+      } else {
+        completeSetup('denied');
+      }
+    }
+  }, [deferredPrompt, completeSetup]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // View: Loading (auth check in progress)
+  // ─────────────────────────────────────────────────────────────────────────
   if (authStatus === 'loading') {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center gap-4 text-white">
@@ -93,26 +195,23 @@ function StaffAppShell() {
     );
   }
 
-  // ── Missing token or unauthorized ─────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // View: Access denied (missing token or completely invalid)
+  // ─────────────────────────────────────────────────────────────────────────
   if (authStatus === 'missing_token' || authStatus === 'unauthorized') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-sm w-full text-center">
-          {/* Lock icon */}
           <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5">
-            <svg
-              width="26" height="26" viewBox="0 0 24 24" fill="none"
-              stroke="#D64545" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
-              aria-hidden="true"
-            >
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+              stroke="#D64545" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
           </div>
           <h2 className="text-lg font-bold text-slate-900 mb-2">Access Denied</h2>
           <p className="text-sm text-slate-500 leading-relaxed">
-            This link is invalid or has expired.
-            <br />
+            This link is invalid or has expired.<br />
             Please ask the host to send a new invite link.
           </p>
         </div>
@@ -120,7 +219,142 @@ function StaffAppShell() {
     );
   }
 
-  // ── Authenticated — main scanner shell ────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // View: Revoked
+  // ─────────────────────────────────────────────────────────────────────────
+  if (authStatus === 'revoked') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-sm w-full text-center">
+          <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+              stroke="#D64545" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" /><path d="M4.93 4.93l14.14 14.14" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-bold text-slate-900 mb-2">Link Revoked</h2>
+          <p className="text-sm text-slate-500 leading-relaxed">
+            This link has been revoked. Please ask the host to send you a new one.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // View: Expired
+  // ─────────────────────────────────────────────────────────────────────────
+  if (authStatus === 'expired') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-sm w-full text-center">
+          <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-5">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+              stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-bold text-slate-900 mb-2">Link Expired</h2>
+          <p className="text-sm text-slate-500 leading-relaxed">
+            This link has expired. ExplaraX Check-in links are valid until 24 hours after the event ends.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // View: First-launch Setup (authenticated but onboarding not yet complete)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (authStatus === 'authenticated' && setupStatus !== 'complete') {
+    const isRequesting = setupStatus === 'requesting';
+
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex flex-col">
+
+        {/* Branding strip */}
+        <div className="px-6 pt-8 pb-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#7E57C2]">
+            ExplaraX Chek-In
+          </p>
+        </div>
+
+        {/* Main welcome card */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
+          <div className="w-full max-w-sm">
+
+            {/* Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-[#7E57C2]/15 flex items-center justify-center mb-8 mx-auto">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
+                stroke="#c4b5fd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M23 7l-7 5 7 5V7z" />
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+              </svg>
+            </div>
+
+            {/* Welcome text */}
+            <h1 className="text-3xl font-black text-white text-center leading-tight mb-3">
+              Welcome,<br />{staffData?.name ?? 'Staff Member'}.
+            </h1>
+            <p className="text-slate-400 text-center text-base leading-relaxed mb-10">
+              You're checking in guests at{' '}
+              <span className="text-white font-semibold">
+                {staffData?.gateId ?? 'your gate'}
+              </span>.
+            </p>
+
+            {/* Step indicators */}
+            <div className="space-y-3 mb-10">
+              {[
+                { icon: '📷', label: 'Allow camera access for QR scanning' },
+                { icon: '📲', label: 'Add to Home Screen for the best experience' },
+              ].map(({ icon, label }) => (
+                <div key={label} className="flex items-center gap-3 bg-slate-800/60 rounded-xl px-4 py-3">
+                  <span className="text-lg" aria-hidden="true">{icon}</span>
+                  <p className="text-sm text-slate-300">{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <button
+              type="button"
+              onClick={handleContinue}
+              disabled={isRequesting}
+              className={`w-full py-4 rounded-2xl font-bold text-base transition-all
+                ${isRequesting
+                  ? 'bg-[#7E57C2]/50 text-white/50 cursor-not-allowed'
+                  : 'bg-[#7E57C2] text-white hover:bg-[#6a48a8] active:scale-[0.97] shadow-lg shadow-[#7E57C2]/25'
+                }`}
+              aria-busy={isRequesting}
+            >
+              {isRequesting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Setting up…
+                </span>
+              ) : (
+                'Continue to Scanner →'
+              )}
+            </button>
+
+            <p className="text-xs text-slate-600 text-center mt-4">
+              Camera permission is requested once and remembered.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // View: Authenticated + Setup complete — main scanner shell
+  //
+  // cameraStatus === 'denied' | 'desktop'  →  hide scanner, show banner + manual CTA
+  // cameraStatus === 'granted'             →  show QRScanner as normal
+  // ─────────────────────────────────────────────────────────────────────────
+  const cameraUnavailable = cameraStatus === 'denied' || cameraStatus === 'desktop';
+
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col relative overflow-hidden">
 
@@ -141,7 +375,25 @@ function StaffAppShell() {
 
       {/* Main content */}
       <main className="flex-1 flex flex-col items-center justify-start p-6 w-full max-w-md mx-auto z-10 overflow-y-auto">
+
+        {/* Offline banner — sticky at top of content area */}
+        {!isOnline && (
+          <div
+            role="alert"
+            className="w-full bg-[#D64545] text-white rounded-xl px-4 py-3 mb-5 flex items-center gap-3 shrink-0"
+          >
+            <svg className="shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="1" y1="1" x2="23" y2="23" />
+              <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
+            </svg>
+            <p className="text-sm font-medium leading-snug">
+              ExplaraX Check-in needs internet right now. Offline mode is coming in the next update.
+            </p>
+          </div>
+        )}
         {showManual ? (
+          /* ── Manual Check-In panel ── */
           <div className="w-full h-full">
             <ManualCheckIn
               eventId={staffData?.eventId}
@@ -151,26 +403,64 @@ function StaffAppShell() {
             />
           </div>
         ) : (
+          /* ── Scanner or camera-denied state ── */
           <div className="w-full flex flex-col items-center">
-            <QRScanner onScanSuccess={() => {}} />
 
+            {cameraUnavailable ? (
+              /* Camera denied / no camera — show banner and skip scanner */
+              <div className="w-full">
+                <div className="w-full bg-[#D64545]/10 border border-[#D64545]/30 rounded-2xl px-5 py-5 flex items-start gap-4 mb-6">
+                  {/* Alert icon */}
+                  <div className="shrink-0 w-10 h-10 rounded-full bg-[#D64545]/15 flex items-center justify-center mt-0.5">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="#D64545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 8v4m0 4h.01" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[#f87171] font-bold text-sm mb-1">
+                      {cameraStatus === 'desktop' ? 'No Camera Detected' : 'Camera Access Denied'}
+                    </p>
+                    <p className="text-slate-400 text-sm leading-relaxed">
+                      Camera access denied.{' '}
+                      <a
+                        href="#"
+                        className="text-[#c4b5fd] underline underline-offset-2 hover:text-white transition-colors"
+                      >
+                        How to re-enable camera
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Camera available — render scanner */
+              <QRScanner onScanSuccess={() => {}} />
+            )}
+
+            {/* Manual Check-in CTA — always visible, more prominent when camera is unavailable */}
             <button
               type="button"
               onClick={() => setShowManual(true)}
-              className="mt-8 w-full px-8 py-4 bg-slate-800 text-white font-semibold rounded-2xl
-                         border border-slate-700 shadow-xl active:scale-95 transition-all text-lg
-                         hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#7E57C2]/50"
+              className={`w-full font-semibold rounded-2xl transition-all text-base
+                focus:outline-none focus:ring-2 focus:ring-[#7E57C2]/50
+                ${cameraUnavailable
+                  ? 'mt-0 px-8 py-5 bg-[#7E57C2] text-white hover:bg-[#6a48a8] active:scale-[0.97] shadow-lg shadow-[#7E57C2]/25 text-lg font-bold'
+                  : 'mt-8 px-8 py-4 bg-slate-800 text-white border border-slate-700 hover:bg-slate-700 active:scale-95'
+                }`}
             >
-              Manual Check-in
+              {cameraUnavailable ? '→ Manual Check-in' : 'Manual Check-in'}
             </button>
+
           </div>
         )}
       </main>
 
-      {/* Global result overlay — receives dynamic staff context */}
+      {/* Global result overlay */}
       <ScanResult
         staffId={staffData?.staffId ?? 'unknown'}
-        gateId={staffData?.gateId  ?? 'unknown'}
+        gateId={staffData?.gateId   ?? 'unknown'}
         eventId={staffData?.eventId ?? 'unknown'}
       />
     </div>

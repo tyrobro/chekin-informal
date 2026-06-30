@@ -44,6 +44,9 @@ class AttendeeSyncJobIntegrationTest extends TestCase
     /** Task 16.4 — Full job with 100 attendees, all deps mocked */
     public function test_job_completes_and_writes_preparation_record_for_100_attendees(): void
     {
+        // Set batch size so all 100 attendees go in a single batch
+        putenv('SYNC_BATCH_SIZE=1000');
+
         // Mock the Log facade so SyncLogger's Log::channel()->info() calls are swallowed
         Log::shouldReceive('channel')->andReturnSelf();
         Log::shouldReceive('info')->andReturn(null);
@@ -86,6 +89,7 @@ class AttendeeSyncJobIntegrationTest extends TestCase
                     $capturedDto = $dto;
                 }
             });
+        $prepRepo->shouldReceive('updateProgress')->andReturn();
 
         // Mock advisory lock
         $lockService = $this->mock(AdvisoryLockService::class);

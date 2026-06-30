@@ -73,7 +73,9 @@ class C1ScenariosTest extends TestCase
         array $attendees,
         int $eventId,
         ?callable $supabaseCallback = null,
+        int $batchSize = 1000,
     ): ?EventPreparationDTO {
+        putenv("SYNC_BATCH_SIZE={$batchSize}");
         $this->silenceLogs();
 
         $syncId = Str::uuid()->toString();
@@ -99,6 +101,7 @@ class C1ScenariosTest extends TestCase
                     $capturedDto = $dto;
                 }
             });
+        $prepRepo->shouldReceive('updateProgress')->andReturn();
 
         $lockService = $this->mock(AdvisoryLockService::class);
         $lockService->shouldReceive('release')->andReturn();
@@ -294,6 +297,7 @@ class C1ScenariosTest extends TestCase
     public function test_network_drop_on_batch_3_retries_and_completes(): void
     {
         $this->silenceLogs();
+        putenv('SYNC_BATCH_SIZE=1000');
 
         $eventId   = 205;
         $attendees = $this->makeAttendees(3000, $eventId); // 3 batches of 1,000
@@ -329,6 +333,7 @@ class C1ScenariosTest extends TestCase
                     $capturedDto = $dto;
                 }
             });
+        $prepRepo->shouldReceive('updateProgress')->andReturn();
 
         $lockService = $this->mock(AdvisoryLockService::class);
         $lockService->shouldReceive('release')->andReturn();
@@ -362,6 +367,8 @@ class C1ScenariosTest extends TestCase
     public function test_batch_failure_after_exhausted_retries_marks_sync_failed(): void
     {
         $this->silenceLogs();
+        Log::shouldReceive('error')->andReturn(null);
+        putenv('SYNC_BATCH_SIZE=1000');
 
         $eventId   = 206;
         $attendees = $this->makeAttendees(2000, $eventId); // 2 batches of 1,000
@@ -394,6 +401,7 @@ class C1ScenariosTest extends TestCase
                     $capturedFailedDto = $dto;
                 }
             });
+        $prepRepo->shouldReceive('updateProgress')->andReturn();
 
         $lockService = $this->mock(AdvisoryLockService::class);
         $lockService->shouldReceive('release')->andReturn();

@@ -20,7 +20,7 @@ class AttendeeBatchPayloadPropertyTest extends TestCase
 
     private const ALLOWED_KEYS = [
         'ticket_id', 'event_id', 'attendee_name', 'ticket_type',
-        'company', 'designation', 'seat', 'qr_token', 'metadata',
+        'designation', 'seat', 'qr_token', 'metadata',
     ];
 
     private const PII_KEYS = ['email', 'phone', 'payment_id', 'card_number', 'national_id'];
@@ -42,21 +42,20 @@ class AttendeeBatchPayloadPropertyTest extends TestCase
                     event_id:      $eventId,
                     attendee_name: $attendeeName,
                     ticket_type:   $ticketType,
-                    company:       'Acme Corp',
                     designation:   'Engineer',
                     seat:          'A1',
                     qr_token:      str_pad(substr($qrToken, 0, 64), 64, '0'),
-                    metadata:      [],
+                    metadata:      ['company' => 'Acme Corp'],
                 );
 
                 $array = $dto->toUpsertArray();
                 $keys  = array_keys($array);
 
-                // Must contain exactly the 9 allowed keys
+                // Must contain exactly the 8 allowed keys (company is in metadata, not top-level)
                 sort($keys);
                 $expected = self::ALLOWED_KEYS;
                 sort($expected);
-                $this->assertSame($expected, $keys, 'Payload must contain exactly the 9 allowed fields');
+                $this->assertSame($expected, $keys, 'Payload must contain exactly the 8 allowed fields');
 
                 // Must not contain any PII key
                 foreach (self::PII_KEYS as $piiKey) {

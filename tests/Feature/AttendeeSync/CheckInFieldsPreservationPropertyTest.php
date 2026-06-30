@@ -45,7 +45,6 @@ class CheckInFieldsPreservationPropertyTest extends TestCase
                     event_id:      $existingRow['event_id'],
                     attendee_name: 'Test Attendee',
                     ticket_type:   'General',
-                    company:       null,
                     designation:   null,
                     seat:          null,
                     qr_token:      str_repeat('a', 64),

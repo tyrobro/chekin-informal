@@ -33,6 +33,12 @@ class SyncBackLargeBatchTest extends TestCase
     private const EVENT_ID = 'TCS-10K-2026';
     private const TOTAL    = 10000;
 
+    protected function setUp(): void
+    {
+        ini_set('memory_limit', '512M');
+        parent::setUp();
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------

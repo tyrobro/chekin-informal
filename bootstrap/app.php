@@ -19,6 +19,20 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'verify.shared.secret' => VerifySharedSecret::class,
         ]);
+
+        // Skip TrimStrings and ConvertEmptyStringsToNull for internal machine-to-machine
+        // endpoints that receive large JSON batches (10,000+ records). These middleware
+        // recursively clone the entire decoded JSON payload via cleanArray(), creating
+        // a full copy of the ~8 MB records array per middleware pass. For a 10K-record
+        // batch this adds ~16 MB of transient heap pressure that pushes past the
+        // memory_limit. The sync-back endpoint receives pre-validated machine data
+        // from Supabase that does not require string trimming or null conversion.
+        $middleware->trimStrings(except: [
+            fn ($request) => $request->is('api/internal/checkin/sync-back'),
+        ]);
+        $middleware->convertEmptyStringsToNull(except: [
+            fn ($request) => $request->is('api/internal/checkin/sync-back'),
+        ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
         // C3: Run the post-event sync-back orchestrator every 5 minutes.

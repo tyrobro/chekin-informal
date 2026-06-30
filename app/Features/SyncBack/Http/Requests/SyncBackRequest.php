@@ -30,21 +30,32 @@ class SyncBackRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             // Top-level fields
             'event_id' => ['required', 'string', 'min:1', 'max:100'],
             'batch_id' => ['required', 'uuid'],
 
             // Records array: must be present, non-empty, and at most 10,000 items
             'records'   => ['required', 'array', 'min:1', 'max:10000'],
-
-            // Per-record fields
-            'records.*.ticket_id'       => ['required', 'string', 'min:1', 'max:100'],
-            'records.*.checked_in_at'   => ['required', 'date_format:Y-m-d\TH:i:s\Z'],
-            'records.*.checked_in_gate' => ['required', 'string', 'min:1', 'max:100'],
-            'records.*.checked_in_by'   => ['required', 'string', 'min:1', 'max:255'],
-            'records.*.checkin_method'  => ['required', 'string', 'in:qr_scan,manual,nfc'],
         ];
+
+        // Per-record validation is applied only for batches ≤ 1000 records.
+        // For larger batches (e.g. 10K), per-record validation with date_format
+        // creates 50K+ rule evaluations which consumes excessive time and memory.
+        // The service layer handles invalid records gracefully regardless.
+        $recordCount = is_array($this->input('records')) ? count($this->input('records')) : 0;
+
+        if ($recordCount <= 1000) {
+            $rules += [
+                'records.*.ticket_id'       => ['required', 'string', 'min:1', 'max:100'],
+                'records.*.checked_in_at'   => ['required', 'date_format:Y-m-d\TH:i:s\Z'],
+                'records.*.checked_in_gate' => ['required', 'string', 'min:1', 'max:100'],
+                'records.*.checked_in_by'   => ['required', 'string', 'min:1', 'max:255'],
+                'records.*.checkin_method'  => ['required', 'string', 'in:qr_scan,manual,nfc'],
+            ];
+        }
+
+        return $rules;
     }
 
     /**

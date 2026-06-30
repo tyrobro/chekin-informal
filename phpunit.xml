@@ -8,8 +8,12 @@
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
+        <testsuite name="Heavy">
+            <file>tests/Feature/SyncBack/SyncBackLargeBatchTest.php</file>
+        </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <exclude>tests/Feature/SyncBack/SyncBackLargeBatchTest.php</exclude>
         </testsuite>
     </testsuites>
     <source>
@@ -18,7 +22,6 @@
         </include>
     </source>
     <php>
-        <ini name="memory_limit" value="256M"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

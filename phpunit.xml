@@ -18,6 +18,7 @@
         </include>
     </source>
     <php>
+        <ini name="memory_limit" value="256M"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
@@ -27,13 +28,14 @@
         <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_PORT" value="5432"/>
         <env name="DB_DATABASE" value="explara_core_test"/>
-        <env name="DB_USERNAME" value="ayush"/>
-        <env name="DB_PASSWORD" value=""/>
+        <env name="DB_USERNAME" value="postgres"/>
+        <env name="DB_PASSWORD" value="0706"/>
         <env name="DB_URL" value=""/>
         <env name="SUPABASE_URL" value="https://test.supabase.co"/>
         <env name="SUPABASE_SERVICE_ROLE_KEY" value="test-service-key"/>
         <env name="SUPABASE_RETRY_DELAY" value="0"/>
         <env name="EXPLARA_PAYMENTS_URL" value="https://payments.explarax.com"/>
+        <env name="EXPLARA_EVENTS_URL" value="https://event.explarax.com"/>
         <env name="EXPLARA_API_TOKEN" value="test-api-token"/>
         <env name="EXPLARA_RETRY_DELAY" value="0"/>
         <env name="SYNC_BATCH_SIZE" value="1000"/>

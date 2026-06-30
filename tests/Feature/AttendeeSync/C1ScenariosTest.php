@@ -67,6 +67,9 @@ class C1ScenariosTest extends TestCase
     {
         Log::shouldReceive('channel')->andReturnSelf();
         Log::shouldReceive('info')->andReturn(null);
+        Log::shouldReceive('warning')->andReturn(null);
+        Log::shouldReceive('error')->andReturn(null);
+        Log::shouldReceive('critical')->andReturn(null);
     }
 
     private function runJobWith(
@@ -99,6 +102,7 @@ class C1ScenariosTest extends TestCase
                     $capturedDto = $dto;
                 }
             });
+        $prepRepo->shouldReceive('updateProgress')->andReturn();
 
         $lockService = $this->mock(AdvisoryLockService::class);
         $lockService->shouldReceive('release')->andReturn();
@@ -329,6 +333,7 @@ class C1ScenariosTest extends TestCase
                     $capturedDto = $dto;
                 }
             });
+        $prepRepo->shouldReceive('updateProgress')->andReturn();
 
         $lockService = $this->mock(AdvisoryLockService::class);
         $lockService->shouldReceive('release')->andReturn();
@@ -394,6 +399,7 @@ class C1ScenariosTest extends TestCase
                     $capturedFailedDto = $dto;
                 }
             });
+        $prepRepo->shouldReceive('updateProgress')->andReturn();
 
         $lockService = $this->mock(AdvisoryLockService::class);
         $lockService->shouldReceive('release')->andReturn();

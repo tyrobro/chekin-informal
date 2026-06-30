@@ -77,8 +77,15 @@ function EventDashboard() {
 
   useEffect(() => {
     if (!events.length || !token) return;
-    setAttendeeCounts({});
-    const tasks = events.map((event) => async () => {
+    // Skip attendee count fetch for events that are already prepared/completed/live.
+    // Their count is known from the preparation record (no Payments API needed).
+    // Only fetch for not_prepared events that haven't been cached yet.
+    const missing = events.filter(
+      (e) => attendeeCounts[e.id] === undefined && e.status === 'not_prepared'
+    );
+    if (!missing.length) return;
+
+    const tasks = missing.map((event) => async () => {
       try {
         const count = await fetchAttendeeCount(event.id, token);
         setAttendeeCounts((prev) => ({ ...prev, [event.id]: count }));
@@ -100,14 +107,12 @@ function EventDashboard() {
   // ── sub-views ──
   if (reportEvent) {
     return (
-      <motion.div
+      <div
         className="min-h-screen"
         style={{ background: '#F5F3FF' }}
-        variants={pageVariants} initial="initial" animate="animate" exit="exit"
-        transition={pageTransition}
       >
         <PostEventReport event={reportEvent} onBack={() => setReportEvent(null)} />
-      </motion.div>
+      </div>
     );
   }
 
@@ -202,7 +207,8 @@ function EventDashboard() {
             variants={{ animate: { transition: { staggerChildren: 0.06 } } }}
           >
             {events.map((event) => {
-              const count      = attendeeCounts[event.id];
+              // Use persisted attendee_count for prepared events; Payments API count for others
+              const count      = attendeeCounts[event.id] ?? (event.status !== 'not_prepared' ? event.attendee_count : undefined);
               const isCounting = count === undefined;
 
               return (
@@ -246,7 +252,7 @@ function EventDashboard() {
                       </ActionButton>
                     )}
 
-                    {(event.status === 'prepared' || event.status === 'live') && (
+                    {(event.status === 'prepared' || event.status === 'live' || event.status === 'completed') && (
                       <>
                         <ActionButton
                           onClick={() => openResyncModal(event.id)}
@@ -273,8 +279,8 @@ function EventDashboard() {
                       </>
                     )}
 
-                    {/* ── Completed: sync is done, show report button ── */}
-                    {(event.sync_status === 'complete' || event.status === 'prepared') && (
+                    {/* ── Report: visible once attendees are synced and event has ended ── */}
+                    {(event.sync_status === 'complete' || event.status === 'completed' || event.status === 'live') && (
                       <ActionButton
                         onClick={() => handleViewReportClick(event)}
                         bg="#7E57C2" hoverBg="#6A3FB5"

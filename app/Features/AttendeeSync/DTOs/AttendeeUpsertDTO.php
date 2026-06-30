@@ -14,6 +14,7 @@ readonly class AttendeeUpsertDTO
         public ?string $designation,
         public ?string $seat,
         public string  $qr_token,       // 64-char hex HMAC-SHA256
+        public ?string $event_name = null,
         public array   $metadata = [],
     ) {}
 
@@ -27,7 +28,7 @@ readonly class AttendeeUpsertDTO
      *
      * @throws \RuntimeException if the resolved ticket_id is empty
      */
-    public static function fromAttendeeDTO(AttendeeDTO $dto, string $qrToken): self
+    public static function fromAttendeeDTO(AttendeeDTO $dto, string $qrToken, ?string $eventName = null): self
     {
         // AttendeeDTO::fromApiResponse() already throws if ticket_id is empty,
         // but we add a second guard here because AttendeeDTO can also be
@@ -53,6 +54,7 @@ readonly class AttendeeUpsertDTO
             designation:   $dto->designation,
             seat:          $dto->seat,
             qr_token:      $qrToken,
+            event_name:    $eventName,
             metadata:      $metadata,
         );
     }
@@ -88,6 +90,7 @@ readonly class AttendeeUpsertDTO
             'designation'   => $this->designation,
             'seat'          => $this->seat,
             'qr_token'      => $this->qr_token,
+            'event_name'    => $this->event_name,
             'metadata'      => $this->metadata,
         ];
     }

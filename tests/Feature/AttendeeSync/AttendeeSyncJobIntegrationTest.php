@@ -86,6 +86,7 @@ class AttendeeSyncJobIntegrationTest extends TestCase
                     $capturedDto = $dto;
                 }
             });
+        $prepRepo->shouldReceive('updateProgress')->andReturn();
 
         // Mock advisory lock
         $lockService = $this->mock(AdvisoryLockService::class);

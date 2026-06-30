@@ -1,460 +1,364 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ID document options for Mode B
-// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * ManualCheckIn — Slice A3 Manual Lookup UI
+ *
+ * Fetches the full attendee list for the event ONCE on mount (already synced
+ * during Prepare Check-in), then does all searching client-side.
+ *
+ * Check-in uses the same Supabase Edge Function as ScanResult (A2) via
+ * window.handlePwaScan — triggering the same GREEN/RED overlay behavior.
+ *
+ * Props:
+ *   eventId   — assigned event (scoped)
+ *   gateId    — gate label
+ *   staffName — staff display name (used as staff_id)
+ *   onClose   — return to scanner
+ */
+
 const ID_DOC_OPTIONS = ['Aadhaar', 'PAN', 'Driving Licence', 'Passport', 'Other'];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ManualCheckIn
-//
-// Props:
-//   eventId    — Supabase event identifier
-//   gateId     — gate label passed to the DB write
-//   staffName  — staff display name passed to the DB write
-//   onClose()  — callback to return to the scanner
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Simple fuzzy match — handles accents, apostrophes, case-insensitive ──────
+function fuzzyMatch(text, query) {
+  if (!text || !query) return false;
+  const normalize = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/['']/g, '');
+  return normalize(text).includes(normalize(query));
+}
+
 function ManualCheckIn({ eventId, gateId, staffName, onClose }) {
-  // ── Search state ──────────────────────────────────────────────────────────
-  const [searchTerm,  setSearchTerm]  = useState('');
-  const [results,     setResults]     = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState(null);
+  // ── Attendee cache (fetched once) ──────────────────────────────────────────
+  const [attendees, setAttendees] = useState([]);
+  const [cacheLoading, setCacheLoading] = useState(true);
+  const [cacheError, setCacheError] = useState(null);
 
-  // ── Expand / verification state ───────────────────────────────────────────
-  // Only one card can be expanded at a time.
-  const [expandedGuestId, setExpandedGuestId] = useState(null);
-  // Per-card: { [ticket_id]: string } — typed last-4 input for Mode A
-  const [last4Inputs,     setLast4Inputs]     = useState({});
-  // Per-card: { [ticket_id]: string } — selected ID doc type for Mode B
-  const [idTypeInputs,    setIdTypeInputs]    = useState({});
-  // Per-card: { [ticket_id]: string } — inline error messages
-  const [cardErrors,      setCardErrors]      = useState({});
+  // ── Search state ───────────────────────────────────────────────────────────
+  const [searchTerm, setSearchTerm] = useState('');
+  const searchRef = useRef(null);
 
-  // ── Check-in processing ───────────────────────────────────────────────────
-  const [processingId, setProcessingId] = useState(null);
+  // ── Detail/verification state ──────────────────────────────────────────────
+  const [selectedGuest, setSelectedGuest] = useState(null);
+  const [last4Input, setLast4Input] = useState('');
+  const [idType, setIdType] = useState('');
+  const [cardError, setCardError] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  const setCardError = useCallback((ticketId, msg) => {
-    setCardErrors((prev) => ({ ...prev, [ticketId]: msg }));
-  }, []);
-
-  const clearCardError = useCallback((ticketId) => {
-    setCardErrors((prev) => {
-      const next = { ...prev };
-      delete next[ticketId];
-      return next;
-    });
-  }, []);
-
-  const toggleExpand = useCallback((ticketId) => {
-    setExpandedGuestId((prev) => (prev === ticketId ? null : ticketId));
-    clearCardError(ticketId);
-  }, [clearCardError]);
-
-  // ── Search (unchanged logic, 400ms debounce, 2-char minimum) ─────────────
+  // ── Fetch full attendee list once on mount (client-side search) ─────────────
   useEffect(() => {
-    if (!searchTerm || searchTerm.length < 2) {
-      setResults([]);
-      return;
-    }
+    if (!eventId) return;
+    setCacheLoading(true);
+    setCacheError(null);
 
-    const timerId = setTimeout(async () => {
-      setIsSearching(true);
-      setSearchError(null);
-
-      try {
-        const safeQuery = encodeURIComponent(`%${searchTerm}%`);
-
-        const endpoint =
-          `${supabaseUrl}/rest/v1/event_attendees` +
-          `?event_id=eq.${eventId}` +
-          `&attendee_name=ilike.${safeQuery}` +
-          `&select=ticket_id,attendee_name,ticket_type,checked_in_at` +
-          `&limit=20`;
-
-        const response = await fetch(endpoint, {
-          headers: {
-            apikey:          supabaseAnon,
-            Authorization:   `Bearer ${supabaseAnon}`,
-            'Content-Type':  'application/json',
-          },
-        });
-
-        if (!response.ok) throw new Error('Search failed');
-
-        const data = await response.json();
-        setResults(data || []);
-        // Collapse any previously expanded card when results refresh
-        setExpandedGuestId(null);
-      } catch (err) {
-        console.error('Search error:', err);
-        setSearchError('Failed to fetch guest list. Please try again.');
-      } finally {
-        setIsSearching(false);
+    fetch(
+      `${supabaseUrl}/rest/v1/event_attendees` +
+      `?event_id=eq.${encodeURIComponent(eventId)}` +
+      `&select=ticket_id,attendee_name,ticket_type,company,seat,designation,checked_in_at` +
+      `&order=attendee_name.asc`,
+      {
+        headers: {
+          apikey: supabaseAnon,
+          Authorization: `Bearer ${supabaseAnon}`,
+          'Content-Type': 'application/json',
+        },
       }
-    }, 400);
+    )
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((data) => setAttendees(data || []))
+      .catch((e) => setCacheError(e.message))
+      .finally(() => setCacheLoading(false));
+  }, [eventId, supabaseUrl, supabaseAnon]);
 
-    return () => clearTimeout(timerId);
-  }, [searchTerm, eventId, supabaseUrl, supabaseAnon]);
+  // ── Focus search on mount ──────────────────────────────────────────────────
+  useEffect(() => { searchRef.current?.focus(); }, []);
 
-  // ── Dual-write check-in ───────────────────────────────────────────────────
-  //
-  // method:  'manual_name_ticket_id'  (Mode A)
-  //          'manual_name_id_doc'     (Mode B)
-  // idType:  document type string for Mode B, or undefined for Mode A
-  //
-  // CRITICAL: The PATCH uses Prefer: return=representation.
-  // If the database silently drops the write (RLS policy blocks it), Supabase
-  // returns an empty array instead of the updated row. We detect that and throw
-  // so the UI does NOT turn green on a silent failure.
-  const handleCheckIn = useCallback(async ({ ticketId, method, idType }) => {
-    setProcessingId(ticketId);
-    clearCardError(ticketId);
+  // ── Client-side filtered results (fuzzy, 2-char minimum) ───────────────────
+  // Searches both attendee name AND ticket ID so empty-name tickets are findable.
+  const results = useMemo(() => {
+    if (searchTerm.length < 2) return [];
+    return attendees.filter((a) =>
+      fuzzyMatch(a.attendee_name, searchTerm) ||
+      (a.ticket_id && a.ticket_id.includes(searchTerm))
+    );
+  }, [attendees, searchTerm]);
 
-    const now          = new Date().toISOString();
-    const clientScanId = crypto.randomUUID();
+  // ── Check for duplicate names to show designation ──────────────────────────
+  const nameCounts = useMemo(() => {
+    const counts = {};
+    results.forEach((a) => { counts[a.attendee_name] = (counts[a.attendee_name] || 0) + 1; });
+    return counts;
+  }, [results]);
+
+  // ── Handle check-in via Edge Function (same as A2) ─────────────────────────
+  const handleCheckIn = useCallback(async ({ method, idTypeValue }) => {
+    if (!selectedGuest) return;
+    setIsProcessing(true);
+    setCardError('');
+
+    const payload = {
+      qr_token: `manual:${selectedGuest.ticket_id}`,
+      gate: gateId || 'unknown',
+      staff_id: staffName || 'unknown',
+      event_id: eventId,
+      client_scan_id: crypto.randomUUID(),
+      method: method,
+      ...(idTypeValue ? { idType: idTypeValue } : {}),
+    };
+
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 8000);
 
     try {
-      // Build PATCH body — include metadata for Mode B if idType is present
-      const patchBody = {
-        checked_in_at:   now,
-        checked_in_gate: gateId     || 'unknown',
-        checked_in_by:   staffName  || 'unknown',
-        checkin_method:  method,
-        ...(idType ? { metadata: JSON.stringify({ id_type: idType }) } : {}),
-      };
-
-      // 1. UPDATE event_attendees — Prefer: return=representation required so
-      //    we can detect a silent RLS block (empty array = blocked write).
-      const updateAttendeeReq = fetch(
-        `${supabaseUrl}/rest/v1/event_attendees?ticket_id=eq.${encodeURIComponent(ticketId)}`,
-        {
-          method: 'PATCH',
-          headers: {
-            apikey:          supabaseAnon,
-            Authorization:   `Bearer ${supabaseAnon}`,
-            'Content-Type':  'application/json',
-            Prefer:          'return=representation',   // ← required for RLS detection
-          },
-          body: JSON.stringify(patchBody),
-        },
-      );
-
-      // 2. INSERT audit log into checkin_events (unchanged)
-      const insertLogReq = fetch(`${supabaseUrl}/rest/v1/checkin_events`, {
+      const response = await fetch(`${supabaseUrl}/functions/v1/checkin`, {
         method: 'POST',
         headers: {
-          apikey:          supabaseAnon,
-          Authorization:   `Bearer ${supabaseAnon}`,
-          'Content-Type':  'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${supabaseAnon}`,
         },
-        body: JSON.stringify({
-          ticket_id:      ticketId,
-          event_id:       eventId,
-          gate:           gateId    || 'unknown',
-          staff_user:     staffName || 'unknown',
-          result:         'allowed',
-          scanned_at:     now,
-          client_scan_id: clientScanId,
-          checkin_method: method,
-          ...(idType ? { metadata: JSON.stringify({ id_type: idType }) } : {}),
-        }),
+        body: JSON.stringify(payload),
+        signal: abortController.signal,
       });
 
-      // Run both requests simultaneously
-      const [updateRes, logRes] = await Promise.all([updateAttendeeReq, insertLogReq]);
+      clearTimeout(timeoutId);
 
-      // ── HTTP-level error check ──────────────────────────────────────────
-      if (!updateRes.ok) {
-        const detail = await updateRes.text().catch(() => '');
-        throw new Error(`Attendee update failed (HTTP ${updateRes.status}). ${detail}`.trim());
-      }
-      if (!logRes.ok) {
-        // Audit log failure is non-fatal for the UI but we still want to know
-        console.warn('[ManualCheckIn] Audit log insert failed — HTTP', logRes.status);
-      }
+      let data;
+      try { data = await response.json(); }
+      catch { setCardError('Invalid server response'); setIsProcessing(false); return; }
 
-      // ── Silent RLS failure detection ────────────────────────────────────
-      // With Prefer: return=representation, a successful write returns the
-      // updated row(s). An empty array means RLS blocked the write without
-      // an HTTP error code — the most dangerous silent failure mode.
-      const updatedRows = await updateRes.json();
-      if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
-        throw new Error(
-          'Database blocked the update. Check RLS policies for UPDATE.',
+      if (data.success) {
+        // Mark as checked-in locally
+        setAttendees((prev) =>
+          prev.map((a) => a.ticket_id === selectedGuest.ticket_id
+            ? { ...a, checked_in_at: new Date().toISOString() } : a)
         );
+
+        // Trigger A2 GREEN overlay with method footer
+        if (navigator.vibrate) navigator.vibrate(200);
+        const methodLabel = method === 'manual_ticket_id' || method === 'manual_name_ticket_id'
+          ? 'Manual: Ticket ID'
+          : `Manual: ${idTypeValue || 'ID Document'}`;
+
+        // Use a temporary overlay within this component
+        setCheckInResult({ type: 'success', data: data.ticketInfo, methodLabel });
+        setTimeout(() => { setCheckInResult(null); setSelectedGuest(null); }, 1500);
+      } else {
+        // Map edge function errors
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+        switch (data.error) {
+          case 'denied_already_used':
+            setCardError(`Already checked in at ${data.ticketInfo?.originalGate ?? 'Unknown Gate'}`);
+            break;
+          case 'denied_not_found':
+            setCardError('Ticket not found in database.');
+            break;
+          case 'denied_invalid_event':
+            setCardError('Wrong event — this ticket belongs to another event.');
+            break;
+          default:
+            setCardError(data.message || 'Check-in failed.');
+        }
       }
-
-      // ── Success: collapse card + mark as checked-in in local state ──────
-      setResults((prev) =>
-        prev.map((g) =>
-          g.ticket_id === ticketId ? { ...g, checked_in_at: now } : g,
-        ),
-      );
-      setExpandedGuestId(null);
-
     } catch (err) {
-      console.error('[ManualCheckIn] Check-in error:', err);
-      setCardError(ticketId, err.message || 'Check-in failed. Please try again.');
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        setCardError('Network timeout — try again.');
+      } else {
+        setCardError('Network error — could not reach server.');
+      }
     } finally {
-      setProcessingId(null);
+      setIsProcessing(false);
     }
-  }, [gateId, staffName, eventId, supabaseUrl, supabaseAnon, clearCardError, setCardError]);
+  }, [selectedGuest, gateId, staffName, eventId, supabaseUrl, supabaseAnon]);
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Check-in result overlay state ──────────────────────────────────────────
+  const [checkInResult, setCheckInResult] = useState(null);
+
+  // ── Mode A validation ──────────────────────────────────────────────────────
+  const last4Upper = last4Input.toUpperCase();
+  const expectedLast4 = selectedGuest?.ticket_id?.slice(-4).toUpperCase() ?? '';
+  const modeAReady = last4Upper.length >= 4 && last4Upper === expectedLast4;
+  const modeAWrong = last4Upper.length >= 4 && last4Upper !== expectedLast4;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // ── GREEN success overlay (mirrors A2 behavior) ────────────────────────────
+  if (checkInResult?.type === 'success') {
+    const info = checkInResult.data;
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col justify-center p-6 bg-[#2E7D32]">
+        <div className="text-center">
+          <svg className="w-20 h-20 mx-auto mb-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h1 className="text-4xl font-black text-white mb-2">{info?.userName || selectedGuest?.attendee_name}</h1>
+          <p className="text-xl text-green-100 font-semibold mb-2">{info?.ticketType || selectedGuest?.ticket_type || 'General'}</p>
+          {(info?.company || info?.seat) && (
+            <div className="inline-block bg-black/20 rounded-xl px-5 py-2 mt-2">
+              {info.company && <p className="text-white text-base">{info.company}</p>}
+              {info.seat && <p className="text-green-100">Seat: {info.seat}</p>}
+            </div>
+          )}
+          {/* Verification method footer — A3 requirement */}
+          <p className="mt-6 text-green-200 text-sm font-medium">{checkInResult.methodLabel}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Detail screen (selected guest) ─────────────────────────────────────────
+  if (selectedGuest) {
+    return (
+      <div className="w-full h-full flex flex-col bg-slate-900 text-white">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 shrink-0">
+          <button onClick={() => { setSelectedGuest(null); setCardError(''); setLast4Input(''); setIdType(''); }}
+            className="text-sm font-semibold text-[#c4b5fd]">← Back</button>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-800"
+            aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Attendee info card */}
+          <div className="bg-slate-800 rounded-2xl p-5 space-y-2">
+            <h2 className="text-xl font-black text-white">{selectedGuest.attendee_name || '—'}</h2>
+            <p className="text-sm text-slate-400">{selectedGuest.ticket_type || 'General'}</p>
+            {selectedGuest.company && <p className="text-sm text-slate-300">🏢 {selectedGuest.company}</p>}
+            {selectedGuest.seat && <p className="text-sm text-slate-300">💺 Seat: {selectedGuest.seat}</p>}
+          </div>
+
+          {/* Error */}
+          {cardError && (
+            <div className="bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3">
+              <p className="text-red-400 text-sm">{cardError}</p>
+            </div>
+          )}
+
+          {/* Mode A — Ticket ID */}
+          <div className="bg-slate-800 rounded-2xl p-5 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Verify with Ticket ID</p>
+            <p className="text-xs text-slate-500">Ask the guest for the last 4 characters of their ticket ID.</p>
+            <input type="text" maxLength={4} value={last4Input}
+              onChange={(e) => { setLast4Input(e.target.value); setCardError(''); }}
+              placeholder="Last 4 chars"
+              className={`w-full bg-slate-900 border rounded-xl px-4 py-3 text-center font-mono text-lg tracking-widest text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 transition-colors ${
+                modeAWrong ? 'border-red-500 focus:ring-red-500/30' : modeAReady ? 'border-emerald-500 focus:ring-emerald-500/30' : 'border-slate-600 focus:ring-[#7E57C2]/40'
+              }`}
+              aria-label="Enter last 4 characters of ticket ID" />
+            {modeAWrong && <p className="text-red-400 text-xs text-center">Ticket ID does not match. Try again.</p>}
+            <button type="button" disabled={!modeAReady || isProcessing}
+              onClick={() => handleCheckIn({ method: 'manual_name_ticket_id' })}
+              className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${modeAReady && !isProcessing ? 'bg-[#5BC97C] text-white active:scale-[0.97]' : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}>
+              {isProcessing ? 'Processing…' : 'Check In'}
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-slate-700" />
+            <span className="text-[10px] uppercase tracking-widest text-slate-600 font-bold">or</span>
+            <div className="flex-1 h-px bg-slate-700" />
+          </div>
+
+          {/* Mode B — ID Document */}
+          <div className="bg-slate-800 rounded-2xl p-5 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Verify with ID Document</p>
+            <p className="text-xs text-slate-500">Visually verify the guest's identity using a government ID. No ID number is stored.</p>
+            <select value={idType} onChange={(e) => { setIdType(e.target.value); setCardError(''); }}
+              className={`w-full appearance-none bg-slate-900 border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 cursor-pointer ${
+                idType ? 'border-[#7E57C2] text-white' : 'border-slate-600 text-slate-500'
+              } focus:ring-[#7E57C2]/40`}
+              aria-label="Select ID document type">
+              <option value="" disabled>Select document type…</option>
+              {ID_DOC_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
+            <button type="button" disabled={!idType || isProcessing}
+              onClick={() => handleCheckIn({ method: 'manual_name_id_doc', idTypeValue: idType })}
+              className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${idType && !isProcessing ? 'bg-[#5BC97C] text-white active:scale-[0.97]' : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}>
+              {isProcessing ? 'Processing…' : 'Confirm — ID Verified'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Search list view ───────────────────────────────────────────────────────
   return (
     <div className="w-full h-full flex flex-col bg-slate-900 text-white">
-
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 shrink-0">
-        <h2 className="text-base font-bold tracking-wide">Manual Search</h2>
-        <button
-          type="button"
-          onClick={onClose}
-          className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-800 transition-colors"
-          aria-label="Close manual check-in"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
+        <h2 className="text-base font-bold tracking-wide">Manual Check-in</h2>
+        <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-800"
+          aria-label="Close manual check-in">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
 
       {/* Search input */}
-      <div className="px-4 pt-4 pb-3 border-b border-slate-800 shrink-0 relative">
-        <input
-          type="search"
-          placeholder="Search by name..."
-          value={searchTerm}
+      <div className="px-4 pt-4 pb-3 border-b border-slate-800 shrink-0">
+        <input ref={searchRef} type="search" placeholder="Search by name or ticket ID…" value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-slate-800 text-white border border-slate-700 rounded-xl px-4 py-3
-                     text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2
-                     focus:ring-[#7E57C2]/60 focus:border-[#7E57C2] transition-colors"
-          autoFocus
-          aria-label="Search attendee by name"
-        />
-        {isSearching && (
-          <div className="absolute right-8 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-[#7E57C2]/30 border-t-[#7E57C2] rounded-full animate-spin" />
-        )}
+          className="w-full bg-slate-800 text-white border border-slate-700 rounded-xl px-4 py-3 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#7E57C2]/60 focus:border-[#7E57C2] transition-colors"
+          autoFocus aria-label="Search attendee by name" />
       </div>
 
       {/* Results */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-
-        {/* Search-level error */}
-        {searchError && (
-          <p className="text-red-400 text-sm text-center py-4">{searchError}</p>
-        )}
-
-        {/* Empty state */}
-        {!isSearching && searchTerm.length >= 2 && results.length === 0 && !searchError && (
-          <div className="flex flex-col items-center gap-2 py-10 text-center">
-            <p className="text-slate-400 text-sm">
-              Couldn't find '{searchTerm}'. Try a different spelling, or escalate to the host.
-            </p>
+      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        {cacheLoading && (
+          <div className="flex items-center justify-center py-10 gap-3 text-slate-400">
+            <div className="w-5 h-5 border-2 border-slate-600 border-t-[#7E57C2] rounded-full animate-spin" />
+            <span className="text-sm">Loading attendees…</span>
           </div>
         )}
 
-        {/* Guest cards */}
+        {cacheError && (
+          <p className="text-red-400 text-sm text-center py-4">Failed to load attendees: {cacheError}</p>
+        )}
+
+        {!cacheLoading && searchTerm.length >= 2 && results.length === 0 && (
+          <div className="flex flex-col items-center gap-2 py-10 text-center">
+            <p className="text-slate-300 text-sm font-medium">Not finding the guest?</p>
+            <p className="text-slate-500 text-xs">Escalate to host.</p>
+          </div>
+        )}
+
         {results.map((guest) => {
-          const isExpanded   = expandedGuestId === guest.ticket_id;
-          const isCheckedIn  = Boolean(guest.checked_in_at);
-          const isProcessing = processingId === guest.ticket_id;
-          const cardError    = cardErrors[guest.ticket_id];
-
-          // ── Mode A values ──
-          const last4Typed    = (last4Inputs[guest.ticket_id]  ?? '').toUpperCase();
-          const expectedLast4 = guest.ticket_id.slice(-4).toUpperCase();
-          const modeAReady    = last4Typed === expectedLast4;
-
-          // ── Mode B values ──
-          const selectedIdType = idTypeInputs[guest.ticket_id] ?? '';
-          const modeBReady     = selectedIdType !== '';
+          const isCheckedIn = Boolean(guest.checked_in_at);
+          const showDesignation = (nameCounts[guest.attendee_name] || 0) > 1;
 
           return (
-            <div
-              key={guest.ticket_id}
-              className={`bg-slate-800 rounded-xl border transition-colors ${
-                isExpanded ? 'border-[#7E57C2]/60' : 'border-slate-700'
-              }`}
-            >
-              {/* Card header row — always visible */}
-              <div
-                className={`flex items-center justify-between px-4 py-3 ${
-                  !isCheckedIn ? 'cursor-pointer' : 'cursor-default'
-                }`}
-                onClick={() => !isCheckedIn && toggleExpand(guest.ticket_id)}
-                role={!isCheckedIn ? 'button' : undefined}
-                aria-expanded={isExpanded}
-                tabIndex={!isCheckedIn ? 0 : -1}
-                onKeyDown={(e) => {
-                  if (!isCheckedIn && (e.key === 'Enter' || e.key === ' ')) {
-                    e.preventDefault();
-                    toggleExpand(guest.ticket_id);
-                  }
-                }}
-              >
+            <button key={guest.ticket_id} type="button" disabled={isCheckedIn}
+              onClick={() => { setSelectedGuest(guest); setLast4Input(''); setIdType(''); setCardError(''); }}
+              className={`w-full text-left bg-slate-800 rounded-xl border px-4 py-3 transition-colors ${
+                isCheckedIn ? 'border-slate-700 opacity-60 cursor-default' : 'border-slate-700 hover:border-[#7E57C2]/50 cursor-pointer'
+              }`}>
+              <div className="flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className="font-semibold text-slate-200 text-sm truncate">
-                    {guest.attendee_name}
-                  </p>
-                  <span className="inline-block mt-1 px-2 py-0.5 bg-slate-700 text-slate-400 text-[10px] uppercase font-bold rounded">
-                    {guest.ticket_type || 'General'}
-                  </span>
+                  <p className="font-semibold text-slate-200 text-sm truncate">{guest.attendee_name || '—'}</p>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="px-2 py-0.5 bg-slate-700 text-slate-400 text-[10px] uppercase font-bold rounded">
+                      {guest.ticket_type || 'General'}
+                    </span>
+                    {guest.company && <span className="text-slate-500 text-[11px]">{guest.company}</span>}
+                    {showDesignation && guest.designation && (
+                      <span className="text-slate-500 text-[11px] italic">· {guest.designation}</span>
+                    )}
+                  </div>
                 </div>
-
                 {isCheckedIn ? (
-                  <span className="shrink-0 ml-3 px-3 py-1 bg-emerald-500/15 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30">
-                    Checked In
+                  <span className="shrink-0 ml-2 px-2 py-0.5 bg-emerald-500/15 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/30">
+                    Done
                   </span>
                 ) : (
-                  <svg
-                    className={`shrink-0 ml-3 text-slate-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                    width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M6 9l6 6 6-6"/>
-                  </svg>
+                  <svg className="shrink-0 ml-2 text-slate-600" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                 )}
               </div>
-
-              {/* Expanded verification panel */}
-              {isExpanded && !isCheckedIn && (
-                <div className="px-4 pb-4 space-y-4 border-t border-slate-700/50 pt-3">
-
-                  {/* Per-card error */}
-                  {cardError && (
-                    <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/25 rounded-lg px-3 py-2">
-                      <svg className="shrink-0 mt-0.5 text-red-400" width="14" height="14" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
-                      </svg>
-                      <p className="text-red-400 text-xs leading-relaxed">{cardError}</p>
-                    </div>
-                  )}
-
-                  {/* ── Mode A: Ticket ID verification ── */}
-                  <div className="space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                      Mode A — Verify Ticket ID
-                    </p>
-                    <input
-                      type="text"
-                      maxLength={4}
-                      value={last4Inputs[guest.ticket_id] ?? ''}
-                      onChange={(e) =>
-                        setLast4Inputs((prev) => ({
-                          ...prev,
-                          [guest.ticket_id]: e.target.value,
-                        }))
-                      }
-                      placeholder="Last 4 chars of Ticket ID"
-                      className={`w-full bg-slate-900 border rounded-lg px-3 py-2.5 text-sm font-mono
-                                  text-center tracking-widest text-white placeholder:text-slate-600
-                                  placeholder:text-xs placeholder:tracking-normal
-                                  focus:outline-none focus:ring-2 transition-colors ${
-                                    last4Typed.length === 4
-                                      ? modeAReady
-                                        ? 'border-emerald-500 focus:ring-emerald-500/30'
-                                        : 'border-red-500 focus:ring-red-500/30'
-                                      : 'border-slate-600 focus:ring-[#7E57C2]/40 focus:border-[#7E57C2]'
-                                  }`}
-                      aria-label="Enter last 4 characters of ticket ID"
-                    />
-                    {last4Typed.length === 4 && !modeAReady && (
-                      <p className="text-red-400 text-[11px] text-center">
-                        Doesn't match — ask the guest to check again.
-                      </p>
-                    )}
-                    <button
-                      type="button"
-                      disabled={!modeAReady || isProcessing}
-                      onClick={() =>
-                        handleCheckIn({
-                          ticketId: guest.ticket_id,
-                          method:   'manual_name_ticket_id',
-                        })
-                      }
-                      className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${
-                        modeAReady && !isProcessing
-                          ? 'bg-[#7E57C2] text-white hover:bg-[#6a48a8] active:scale-[0.97]'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      {isProcessing ? 'Processing…' : 'Verify & Check In'}
-                    </button>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-px bg-slate-700" />
-                    <span className="text-[10px] uppercase tracking-widest text-slate-600 font-bold">or</span>
-                    <div className="flex-1 h-px bg-slate-700" />
-                  </div>
-
-                  {/* ── Mode B: ID document verification ── */}
-                  <div className="space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                      Mode B — Verify ID Document
-                    </p>
-                    <div className="relative">
-                      <select
-                        value={selectedIdType}
-                        onChange={(e) =>
-                          setIdTypeInputs((prev) => ({
-                            ...prev,
-                            [guest.ticket_id]: e.target.value,
-                          }))
-                        }
-                        className={`w-full appearance-none bg-slate-900 border rounded-lg px-3 py-2.5 text-sm
-                                    focus:outline-none focus:ring-2 transition-colors cursor-pointer ${
-                                      selectedIdType
-                                        ? 'border-[#7E57C2] text-white focus:ring-[#7E57C2]/40'
-                                        : 'border-slate-600 text-slate-500 focus:ring-[#7E57C2]/40 focus:border-[#7E57C2]'
-                                    }`}
-                        aria-label="Select ID document type"
-                      >
-                        <option value="" disabled>Select document type…</option>
-                        {ID_DOC_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt} className="bg-slate-800 text-white">{opt}</option>
-                        ))}
-                      </select>
-                      <svg
-                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
-                        width="14" height="14" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M6 9l6 6 6-6"/>
-                      </svg>
-                    </div>
-                    <button
-                      type="button"
-                      disabled={!modeBReady || isProcessing}
-                      onClick={() =>
-                        handleCheckIn({
-                          ticketId: guest.ticket_id,
-                          method:   'manual_name_id_doc',
-                          idType:   selectedIdType,
-                        })
-                      }
-                      className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${
-                        modeBReady && !isProcessing
-                          ? 'bg-[#7E57C2] text-white hover:bg-[#6a48a8] active:scale-[0.97]'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                      }`}
-                    >
-                      {isProcessing ? 'Processing…' : 'Confirm — ID Verified'}
-                    </button>
-                  </div>
-
-                </div>
-              )}
-            </div>
+            </button>
           );
         })}
       </div>

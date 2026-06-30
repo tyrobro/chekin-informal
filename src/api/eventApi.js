@@ -98,11 +98,11 @@ export async function fetchEventCheckinState(eventIds, rawEvents) {
   // Run both queries in parallel — either can fail silently; we degrade
   // gracefully to 'not_prepared' rather than crashing the whole dashboard.
   const [prepRows, attendeePresence] = await Promise.all([
-    // 1. event_preparations — sync_status + completed_at
+    // 1. event_preparations — status + prepared_at + attendee_count
     supabaseFetch(
       `/rest/v1/event_preparations` +
       `?event_id=in.(${idList})` +
-      `&select=event_id,sync_status,completed_at`,
+      `&select=event_id,status,prepared_at,attendee_count`,
     ).catch(() => []),
 
     // 2. event_attendees — one row per event_id to confirm presence.
@@ -116,7 +116,7 @@ export async function fetchEventCheckinState(eventIds, rawEvents) {
   ]);
 
   // Build lookup: event_id → preparation row
-  /** @type {Map<string, { sync_status: string, completed_at: string|null }>} */
+  /** @type {Map<string, { status: string, prepared_at: string|null }>} */
   const prepByEvent = new Map(
     (prepRows ?? []).map((r) => [String(r.event_id), r]),
   );
@@ -130,7 +130,7 @@ export async function fetchEventCheckinState(eventIds, rawEvents) {
   const endTimeByEvent = new Map(
     (rawEvents ?? []).map((e) => [
       String(e.id ?? e.event_id),
-      e.end_time ?? e.ends_at ?? e.event_end ?? null,
+      e.end_time ?? e.ends_at ?? e.event_end ?? e.end_date_time ?? null,
     ]),
   );
 
@@ -142,14 +142,14 @@ export async function fetchEventCheckinState(eventIds, rawEvents) {
     const prep = prepByEvent.get(sid);
 
     // Sync complete → terminal state regardless of time
-    if (prep?.sync_status === 'complete') {
-      result.set(sid, { status: 'completed', sync_status: 'complete' });
+    if (prep?.status === 'completed') {
+      result.set(sid, { status: 'completed', sync_status: 'complete', attendee_count: prep.attendee_count ?? 0 });
       continue;
     }
 
     // Sync failed but attendees exist — host needs to retry
-    if (prep?.sync_status === 'failed' && preparedEventIds.has(sid)) {
-      result.set(sid, { status: 'live', sync_status: 'failed' });
+    if (prep?.status === 'failed' && preparedEventIds.has(sid)) {
+      result.set(sid, { status: 'live', sync_status: 'failed', attendee_count: prep.attendee_count ?? 0 });
       continue;
     }
 
@@ -158,14 +158,15 @@ export async function fetchEventCheckinState(eventIds, rawEvents) {
       const endTime = endTimeByEvent.get(sid);
       const isLive  = endTime ? new Date(endTime).getTime() < now : false;
       result.set(sid, {
-        status:      isLive ? 'live' : 'prepared',
-        sync_status: prep?.sync_status ?? null,
+        status:         isLive ? 'live' : 'prepared',
+        sync_status:    prep?.status ?? null,
+        attendee_count: prep?.attendee_count ?? 0,
       });
       continue;
     }
 
     // No attendees in Supabase — not prepared yet
-    result.set(sid, { status: 'not_prepared', sync_status: null });
+    result.set(sid, { status: 'not_prepared', sync_status: null, attendee_count: 0 });
   }
 
   return result;

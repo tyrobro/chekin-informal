@@ -22,6 +22,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class AttendeeSyncJob implements ShouldQueue
@@ -47,6 +48,82 @@ class AttendeeSyncJob implements ShouldQueue
         private readonly string $syncId,
         private readonly string $queuedAt,
     ) {}
+
+    /**
+     * Fetch the event name from the ExplaraX Events API.
+     * Returns null on failure (non-fatal — sync continues without event_name).
+     * Skipped in testing environment to avoid unfaked HTTP requests.
+     */
+    private function fetchEventName(): ?string
+    {
+        // Skip network call in testing to prevent stray HTTP requests
+        if (app()->environment('testing')) {
+            return null;
+        }
+
+        try {
+            $baseUrl = rtrim((string) config('services.explara.events_url', env('EXPLARA_EVENTS_URL', 'https://event.explarax.com')), '/');
+            $token = (string) config('services.explara.api_token', env('EXPLARA_API_TOKEN', ''));
+            $res = Http::withToken($token)
+                ->get("{$baseUrl}/api/event");
+
+            if (!$res->successful()) return null;
+
+            $events = $res->json();
+            $list = is_array($events['data'] ?? null) ? $events['data'] : (is_array($events) ? $events : []);
+
+            foreach ($list as $event) {
+                if (isset($event['id']) && (int) $event['id'] === $this->eventId) {
+                    return $event['name'] ?? $event['title'] ?? null;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('AttendeeSyncJob: could not fetch event name', [
+                'event_id' => $this->eventId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Write the preparation status to Supabase event_preparations table.
+     * This allows the frontend to read the preparation state.
+     * Non-fatal — failure is logged but does not block the sync.
+     */
+    private function writePreparationToSupabase(string $status, int $attendeeCount = 0, int $batchCount = 0): void
+    {
+        if (app()->environment('testing')) {
+            return;
+        }
+
+        try {
+            $supabaseUrl = rtrim((string) env('SUPABASE_URL', ''), '/');
+            $serviceKey  = (string) env('SUPABASE_SERVICE_ROLE_KEY', '');
+
+            Http::withHeaders([
+                'Authorization' => "Bearer {$serviceKey}",
+                'apikey'        => $serviceKey,
+                'Content-Type'  => 'application/json',
+                'Prefer'        => 'resolution=merge-duplicates',
+            ])
+            ->withQueryParameters(['on_conflict' => 'event_id'])
+            ->post("{$supabaseUrl}/rest/v1/event_preparations", [
+                'event_id'       => $this->eventId,
+                'sync_id'        => $this->syncId,
+                'status'         => $status,
+                'prepared_at'    => now()->toIso8601String(),
+                'attendee_count' => $attendeeCount,
+                'batch_count'    => $batchCount,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('AttendeeSyncJob: could not write preparation to Supabase', [
+                'event_id' => $this->eventId,
+                'error'    => $e->getMessage(),
+            ]);
+        }
+    }
 
     /**
      * Execute the full attendee sync pipeline.
@@ -109,10 +186,16 @@ class AttendeeSyncJob implements ShouldQueue
             //            fromAttendeeDTO() folds 'company' into the metadata
             //            array, so toUpsertArray() never emits a top-level
             //            'company' key — preventing PGRST204 from Supabase. ──
+            //
+            //            Also passes event_name so it's included in the upsert.
+            //            Event name is fetched once from the ExplaraX Events API.
+            $eventName = $this->fetchEventName();
+
             $upsertDtos = array_map(
                 static fn (AttendeeDTO $dto) => AttendeeUpsertDTO::fromAttendeeDTO(
                     $dto,
-                    $qrTokenService->sign($dto->ticket_id, $hmacKey)
+                    $qrTokenService->sign($dto->ticket_id, $hmacKey),
+                    $eventName
                 ),
                 $attendeeDtos
             );
@@ -151,6 +234,9 @@ class AttendeeSyncJob implements ShouldQueue
             $prepRepo->upsert(
                 EventPreparationDTO::completed($this->eventId, $this->syncId, $totalCount, $totalBatches)
             );
+
+            // ── Step 7b: Write completion status to Supabase so frontend can read it ──
+            $this->writePreparationToSupabase('completed', $totalCount, $totalBatches);
 
             // ── Step 8: Release lock and log ──
             $lockService->release($this->eventId);

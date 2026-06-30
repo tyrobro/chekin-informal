@@ -15,6 +15,7 @@
  */
 
 import { supabaseFetch } from '../lib/supabaseClient.js';
+import { signStaffToken } from '../lib/hmacLink.js';
 
 // Edge Function base URL — same origin as the REST API, different path prefix.
 const SUPABASE_URL     = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, '');
@@ -88,8 +89,20 @@ export async function fetchStaff(eventId) {
  * @returns {Promise<StaffMember>} — the newly created row
  */
 export async function inviteStaff({ eventId, name, email, gate, eventEndsAt }) {
-  const eventEnd   = eventEndsAt ? new Date(eventEndsAt) : new Date();
-  const expiresAt  = new Date(eventEnd.getTime() + 24 * 60 * 60 * 1000).toISOString();
+  // expires_at = event end + 24 h. If the event end is unknown or in the past,
+  // fall back to 7 days from now so the link remains usable.
+  let expiresAt;
+  if (eventEndsAt) {
+    const eventEnd = new Date(eventEndsAt);
+    const candidate = new Date(eventEnd.getTime() + 24 * 60 * 60 * 1000);
+    // If the event has already ended and the 24h window is in the past, give 7 days.
+    expiresAt = candidate > new Date()
+      ? candidate.toISOString()
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  } else {
+    console.warn('[inviteStaff] eventEndsAt is missing — expires_at defaulting to 7 days from now');
+    expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  }
   const inviteToken = generateSecureToken();
 
   const rows = await supabaseFetch(TABLE, {
@@ -109,6 +122,11 @@ export async function inviteStaff({ eventId, name, email, gate, eventEndsAt }) {
   // supabaseFetch returns an array when Prefer: return=representation is set
   const newMember = Array.isArray(rows) ? rows[0] : rows;
 
+  // Sign the token with HMAC for tamper protection
+  if (newMember?.invite_token) {
+    newMember.signed_token = await signStaffToken(newMember.invite_token);
+  }
+
   // ── Trigger invite email (fire-and-forget) ──────────────────────────────
   // A delivery hiccup must never prevent the staff member from being added.
   // Errors are logged as warnings so the host can follow up manually.
@@ -117,6 +135,9 @@ export async function inviteStaff({ eventId, name, email, gate, eventEndsAt }) {
     email:       email.trim().toLowerCase(),
     gate:        gate.trim(),
     inviteToken: inviteToken,
+    staffAppBaseUrl: import.meta.env.DEV
+      ? `${window.location.origin}/staff`
+      : 'https://checkin.explarax.com/staff',
   }).catch((err) => {
     console.warn(
       '[inviteStaff] Email invite could not be sent — staff member was still created.',
@@ -153,8 +174,16 @@ export async function revokeStaff(staffId) {
  * @returns {Promise<StaffMember>}
  */
 export async function resendInvite(staffId, eventEndsAt) {
-  const eventEnd   = eventEndsAt ? new Date(eventEndsAt) : new Date();
-  const expiresAt  = new Date(eventEnd.getTime() + 24 * 60 * 60 * 1000).toISOString();
+  let expiresAt;
+  if (eventEndsAt) {
+    const eventEnd = new Date(eventEndsAt);
+    const candidate = new Date(eventEnd.getTime() + 24 * 60 * 60 * 1000);
+    expiresAt = candidate > new Date()
+      ? candidate.toISOString()
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  } else {
+    expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  }
   const inviteToken = generateSecureToken();
 
   const rows = await supabaseFetch(
@@ -169,5 +198,9 @@ export async function resendInvite(staffId, eventEndsAt) {
       }),
     },
   );
-  return Array.isArray(rows) ? rows[0] : rows;
+  const result = Array.isArray(rows) ? rows[0] : rows;
+  if (result?.invite_token) {
+    result.signed_token = await signStaffToken(result.invite_token);
+  }
+  return result;
 }

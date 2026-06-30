@@ -47,7 +47,7 @@ export function useEventStatus() {
       const baseEvents = raw.map((e) => ({
         id:       String(e.id ?? e.event_id),
         name:     e.name ?? e.title ?? e.event_name ?? '(Unnamed event)',
-        end_time: e.end_time ?? e.ends_at ?? e.event_end ?? null,
+        end_time: e.end_time ?? e.ends_at ?? e.event_end ?? e.end_date_time ?? null,
         // Carry through any other fields the API returns (used by fetchEventCheckinState)
         _raw:     e,
       }));
@@ -72,15 +72,17 @@ export function useEventStatus() {
       // Step 3 — merge factual state onto each event
       const enriched = baseEvents.map((e) => {
         const state = stateMap.get(e.id) ?? {
-          status:      'not_prepared',
-          sync_status: null,
+          status:         'not_prepared',
+          sync_status:    null,
+          attendee_count: 0,
         };
         return {
-          id:          e.id,
-          name:        e.name,
-          end_time:    e.end_time,
-          status:      state.status,
-          sync_status: state.sync_status,
+          id:             e.id,
+          name:           e.name,
+          end_time:       e.end_time,
+          status:         state.status,
+          sync_status:    state.sync_status,
+          attendee_count: state.attendee_count ?? 0,
         };
       });
 

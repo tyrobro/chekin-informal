@@ -20,7 +20,7 @@ class AttendeeBatchPayloadPropertyTest extends TestCase
 
     private const ALLOWED_KEYS = [
         'ticket_id', 'event_id', 'attendee_name', 'ticket_type',
-        'company', 'designation', 'seat', 'qr_token', 'metadata',
+        'designation', 'seat', 'qr_token', 'event_name', 'metadata',
     ];
 
     private const PII_KEYS = ['email', 'phone', 'payment_id', 'card_number', 'national_id'];
@@ -42,10 +42,10 @@ class AttendeeBatchPayloadPropertyTest extends TestCase
                     event_id:      $eventId,
                     attendee_name: $attendeeName,
                     ticket_type:   $ticketType,
-                    company:       'Acme Corp',
                     designation:   'Engineer',
                     seat:          'A1',
                     qr_token:      str_pad(substr($qrToken, 0, 64), 64, '0'),
+                    event_name:    null,
                     metadata:      [],
                 );
 

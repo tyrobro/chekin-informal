@@ -61,6 +61,8 @@ readonly class AttendeeDTO
         }
 
         // ── Attendee name — try all known Explara field name variants ──
+        // Note: In the RSVP/ticket API response, the attendee name is often
+        // nested inside an 'account' object as account.name or account.first_name + account.last_name.
         $attendeeName = (string) (
             $data['attendeeName']  ??
             $data['attendee_name'] ??
@@ -69,6 +71,22 @@ readonly class AttendeeDTO
             $data['full_name']     ??
             ''
         );
+
+        // Fallback: extract from nested account object (ExplaraX RSVP format)
+        if ($attendeeName === '' && isset($data['account'])) {
+            $account = $data['account'];
+            // account may be a JSON string or an associative array
+            if (is_string($account)) {
+                $decoded = json_decode($account, true);
+                if (is_array($decoded)) $account = $decoded;
+            }
+            if (is_array($account)) {
+                $attendeeName = (string) ($account['name'] ?? '');
+                if ($attendeeName === '' && (isset($account['first_name']) || isset($account['last_name']))) {
+                    $attendeeName = trim(($account['first_name'] ?? '') . ' ' . ($account['last_name'] ?? ''));
+                }
+            }
+        }
 
         // ── Ticket type — try camelCase and snake_case variants ──
         $ticketType = $data['ticketType']  ??

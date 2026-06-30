@@ -16,8 +16,12 @@ import {
   revokeStaff,
   resendInvite,
 } from '../../../api/staffApi.js';
+import { signStaffToken } from '../../../lib/hmacLink.js';
 
-const STAFF_LINK_BASE = 'https://checkin.explarax.com/staff?token=';
+const STAFF_LINK_BASE =
+  import.meta.env.DEV
+    ? `${window.location.origin}/staff?token=`
+    : 'https://checkin.explarax.com/staff?token=';
 
 /** Duration (ms) a toast stays visible */
 const TOAST_DURATION_MS = 3500;
@@ -115,13 +119,38 @@ export function useStaff(eventId, eventEndsAt) {
   // ── copy link ─────────────────────────────────────────────────────────────
 
   const copyLink = useCallback(async (inviteToken) => {
-    const url = `${STAFF_LINK_BASE}${inviteToken}`;
+    // Sign the token with HMAC before building the URL
+    const signedToken = await signStaffToken(inviteToken);
+    const url = `${STAFF_LINK_BASE}${signedToken}`;
     try {
-      await navigator.clipboard.writeText(url);
-      showToast('Invite link copied to clipboard');
+      // Try modern Clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+        showToast('Invite link copied to clipboard');
+        return;
+      }
+      throw new Error('Clipboard API unavailable');
     } catch {
-      // Fallback for browsers that block clipboard without user gesture
-      showToast('Could not copy — check browser permissions', 'error');
+      // Fallback: use legacy execCommand('copy') for insecure contexts / mobile browsers
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const success = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        if (success) {
+          showToast('Invite link copied to clipboard');
+        } else {
+          showToast('Could not copy — try long-pressing the link', 'error');
+        }
+      } catch {
+        showToast('Could not copy — try long-pressing the link', 'error');
+      }
     }
   }, [showToast]);
 

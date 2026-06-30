@@ -7,10 +7,9 @@
  *   3. Toast       — transient feedback notifications
  *
  * Props:
- *   event — { id: string, name: string, ends_at?: string }
- *           ends_at (ISO string) drives the 24-hour token expiry window.
- *           If the event object does not carry ends_at, expiry falls back
- *           to 24 h from now, which is acceptable for iteration 1.
+ *   event — { id: string, name: string, end_time?: string, ends_at?: string }
+ *           end_time (ISO string) drives the 24-hour token expiry window.
+ *           Falls back to ends_at for compatibility, then to 24 h from now.
  *   onBack — () => void  — called when the user taps "← Back to Events"
  */
 
@@ -33,7 +32,7 @@ function StaffManagement({ event, onBack }) {
     copyLink,
     toast,
     dismissToast,
-  } = useStaff(event.id, event.ends_at ?? null);
+  } = useStaff(event.id, event.end_time ?? event.ends_at ?? null);
 
   return (
     <div className={styles.page}>

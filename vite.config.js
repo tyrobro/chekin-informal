@@ -1,12 +1,27 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import basicSsl from '@vitejs/plugin-basic-ssl'; // <-- 1. Import it here
+import basicSsl from '@vitejs/plugin-basic-ssl';
 
 export default defineConfig({
+  server: {
+    host: true,
+    port: 5173,
+    // HTTPS is required for camera access and PWA install on non-localhost
+    // (phones access via network IP which isn't treated as secure context).
+    // On desktop localhost, browsers treat it as secure regardless.
+    https: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
   plugins: [
     react(),
-    basicSsl(), // <-- 2. Add it to the plugins list
+    basicSsl(),
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
